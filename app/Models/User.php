@@ -42,4 +42,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function favoriteBooks()
+    {
+        return $this->belongsToMany(Book::class, 'book_user', 'user_id', 'book_id')->withTimestamps();
+    }
+
+    public function likedReviews()
+    {
+        return $this->belongsToMany(Review::class, 'review_user', 'user_id', 'review_id')->withTimestamps();
+    }
 }
