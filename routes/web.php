@@ -23,7 +23,11 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::resource('books', BookController::class);
     Route::resource('genres', GenreController::class);
-    Route::resource('books.reviews', ReviewController::class)->only(['store', 'edit', 'update', 'destroy']);
+
+    Route::post('books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
+    Route::delete('books/{book}/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::get('reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
+    Route::put('reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
 
     Route::get('/ranking', function () {
         return 'ランキング画面（未実装）';
