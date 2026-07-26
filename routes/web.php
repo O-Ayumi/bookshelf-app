@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\LikeController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,21 +31,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
     Route::put('reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
 
+    Route::get('favorites', [FavoriteController::class, 'index'])->name('favorites.index');
+    Route::post('books/{book}/favorite', [FavoriteController::class, 'toggle'])->name('favorites.toggle');
+
+    Route::post('reviews/{review}/like', [LikeController::class, 'toggle'])->name('reviews.like');
+
     Route::get('/ranking', function () {
         return 'ランキング画面（未実装）';
     })->name('ranking.index');
-    Route::get('/favorites', function () {
-        return 'お気に入り画面（未実装）';
-    })->name('favorites.index');
-    Route::post('/reviews/{review}/like', function () {
-        return 'いいね画面(未実装）';
-    })->name('reviews.like');
 
     // ログアウトはPOSTメソッドで要求されることが多いので、両方に対応できるようにするか、一般的なPOSTで定義します
     Route::post('/logout', function () {
         return 'ログアウト処理（未実装）';
     })->name('logout');
-    Route::post('/books/{book}/favorite', function () {
-        return back()->with('success', 'お気に入りを切り替えました（ダミー）');
-    })->name('favorites.toggle');
 });

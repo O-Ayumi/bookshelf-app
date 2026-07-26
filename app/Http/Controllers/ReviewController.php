@@ -32,7 +32,7 @@ class ReviewController extends Controller
 
             return back()->with('success', 'レビューを投稿しました');
         } catch (Exception $e) {
-            Log::error('レビュー投稿失敗:' . $e->getMessage());
+            Log::error('レビュー投稿失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '投稿に失敗しました');
         }
@@ -60,7 +60,7 @@ class ReviewController extends Controller
 
             return redirect()->route('books.show', $review->book_id)->with('success', 'レビューを更新しました');
         } catch (Exception $e) {
-            Log::error('レビュー更新失敗:' . $e->getMessage());
+            Log::error('レビュー更新失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '更新に失敗しました');
         }
@@ -78,7 +78,7 @@ class ReviewController extends Controller
 
             return redirect()->route('books.show', $book)->with('success', 'レビューを削除しました');
         } catch (Exception $e) {
-            Log::error('レビュー削除失敗:' . $e->getMessage());
+            Log::error('レビュー削除失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '削除に失敗しました');
         }

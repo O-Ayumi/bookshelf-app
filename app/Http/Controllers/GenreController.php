@@ -38,7 +38,7 @@ class GenreController extends Controller
 
             return redirect()->route('genres.index')->with('success', 'ジャンルを登録しました');
         } catch (Exception $e) {
-            Log::error('ジャンル登録失敗:' . $e->getMessage());
+            Log::error('ジャンル登録失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '登録に失敗しました');
         }
@@ -70,7 +70,7 @@ class GenreController extends Controller
 
             return redirect()->route('genres.index')->with('success', 'ジャンル名を更新しました');
         } catch (Exception $e) {
-            Log::error('ジャンル更新失敗:' . $e->getMessage());
+            Log::error('ジャンル更新失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '更新に失敗しました');
         }
@@ -86,7 +86,7 @@ class GenreController extends Controller
 
             return redirect()->route('genres.index')->with('success', 'ジャンルを削除しました');
         } catch (Exception $e) {
-            Log::error('ジャンル削除失敗:' . $e->getMessage());
+            Log::error('ジャンル削除失敗:'.$e->getMessage());
 
             return back()->with('error', '削除に失敗しました');
         }
