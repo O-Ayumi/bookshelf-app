@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,6 +23,7 @@ Route::get('/', function () {
 Route::middleware(['auth'])->group(function () {
     Route::resource('books', BookController::class);
     Route::resource('genres', GenreController::class);
+    Route::resource('books.reviews', ReviewController::class)->only(['store', 'edit', 'update', 'destroy']);
 
     Route::get('/ranking', function () {
         return 'ランキング画面（未実装）';
@@ -37,7 +39,4 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/books/{book}/favorite', function () {
         return back()->with('success', 'お気に入りを切り替えました（ダミー）');
     })->name('favorites.toggle');
-    Route::post('/books/{book}/reviews', function () {
-        return back()->with('success', 'レビューを投稿しました（ダミー）');
-    })->name('reviews.store');
 });
