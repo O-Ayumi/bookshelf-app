@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Book;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
-use Illuminate\Support\Facades\Log;
+use App\Models\Book;
+use App\Models\Genre;
 use Exception;
+use Illuminate\Support\Facades\Log;
 
 class BookController extends Controller
 {
@@ -25,7 +26,9 @@ class BookController extends Controller
      */
     public function create()
     {
-        return view('books.create');
+        $genres = Genre::all();
+
+        return view('books.create', compact('genres'));
     }
 
     /**
@@ -34,11 +37,15 @@ class BookController extends Controller
     public function store(StoreBookRequest $request)
     {
         try {
-            $book = Book::create($request->validated());
+            $bookData = $request->validated();
+            $bookData['user_id'] = auth()->id();
 
-            return redirect()->route('books.show')->with('success', '書籍を登録しました');
+            $book = Book::create($bookData);
+
+            return redirect()->route('books.show', ['book' => $book->id])->with('success', '書籍を登録しました');
+
         } catch (Exception $e) {
-            Log::error('書籍登録失敗:' . $e->getMessage());
+            Log::error('書籍登録失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '登録に失敗しました');
         }
@@ -57,7 +64,9 @@ class BookController extends Controller
      */
     public function edit(Book $book)
     {
-        return view('books.edit', compact('book'));
+        $genres = Genre::all();
+
+        return view('books.edit', compact('book', 'genres'));
     }
 
     /**
@@ -70,7 +79,7 @@ class BookController extends Controller
 
             return redirect()->route('books.show', $book)->with('success', '書籍を更新しました');
         } catch (Exception $e) {
-            Log::error('書籍更新失敗:' . $e->getMessage());
+            Log::error('書籍更新失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '更新に失敗しました');
         }
@@ -86,7 +95,7 @@ class BookController extends Controller
 
             return redirect()->route('books.index')->with('success', '書籍を削除しました');
         } catch (Exception $e) {
-            Log::error('書籍削除失敗:' . $e->getMessage());
+            Log::error('書籍削除失敗:'.$e->getMessage());
 
             return back()->with('error', '削除に失敗しました');
         }

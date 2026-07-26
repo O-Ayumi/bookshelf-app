@@ -21,11 +21,16 @@ class Book extends Model
 
     public function genres()
     {
-        return $this->belongsToMany(Genre::class, 'book_id', 'genre_id')->withTimestamps();
+        return $this->belongsToMany(Genre::class, 'book_genre', 'book_id', 'genre_id')->withTimestamps();
     }
 
     public function favoritedByUsers()
     {
         return $this->belongsToMany(User::class, 'book_user', 'book_id', 'user_id')->withTimestamps();
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
     }
 }

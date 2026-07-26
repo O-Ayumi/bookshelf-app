@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('books', function (Blueprint $table) {
             $table->id();
-            $table->string('titile');
+            $table->string('title');
             $table->string('author');
             $table->string('isbn', 13)->unique();
-            $table->date('published_at');
+            $table->date('published_date');
             $table->text('description')->nullable();
             $table->text('image_url')->nullable();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();

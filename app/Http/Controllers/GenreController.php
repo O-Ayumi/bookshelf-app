@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreGenreRequest;
 use App\Http\Requests\UpdateGenreRequest;
-use App\Models\genre;
+use App\Models\Genre;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 class GenreController extends Controller
@@ -14,7 +15,7 @@ class GenreController extends Controller
      */
     public function index()
     {
-        $genres = genre::orderBy('id', 'asc')->paginate(10);
+        $genres = Genre::orderBy('id', 'asc')->get();
 
         return view('genres.index', compact('genres'));
     }
@@ -33,7 +34,7 @@ class GenreController extends Controller
     public function store(StoreGenreRequest $request)
     {
         try {
-            genre::create($request->validated());
+            Genre::create($request->validated());
 
             return redirect()->route('genres.index')->with('success', 'ジャンルを登録しました');
         } catch (Exception $e) {
@@ -46,7 +47,7 @@ class GenreController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(genre $genre)
+    public function show(Genre $genre)
     {
         return view('genres.show', compact('genre'));
     }
@@ -54,7 +55,7 @@ class GenreController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(genre $genre)
+    public function edit(Genre $genre)
     {
         return view('genres.edit', compact('genre'));
     }
@@ -62,7 +63,7 @@ class GenreController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateGenreRequest $request, genre $genre)
+    public function update(UpdateGenreRequest $request, Genre $genre)
     {
         try {
             $genre->update($request->validated());
@@ -78,7 +79,7 @@ class GenreController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(genre $genre)
+    public function destroy(Genre $genre)
     {
         try {
             $genre->delete();
