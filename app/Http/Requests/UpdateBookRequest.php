@@ -38,8 +38,7 @@ class UpdateBookRequest extends FormRequest
                 Rule::unique('books', 'isbn')->ignore($book),
             ],
             'genres' => 'required|array',
-            'genres,*' => 'exists:genres,id',
-            'book_id' => 'required|exists:books,id',
+            'genres.*' => 'exists:genres,id',
         ];
     }
 
