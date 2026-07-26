@@ -25,7 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('genres', GenreController::class);
 
     Route::post('books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
-    Route::delete('books/{book}/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+    Route::delete('reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
     Route::get('reviews/{review}/edit', [ReviewController::class, 'edit'])->name('reviews.edit');
     Route::put('reviews/{review}', [ReviewController::class, 'update'])->name('reviews.update');
 
@@ -35,6 +35,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/favorites', function () {
         return 'お気に入り画面（未実装）';
     })->name('favorites.index');
+    Route::post('/reviews/{review}/like', function () {
+        return 'いいね画面(未実装）';
+    })->name('reviews.like');
 
     // ログアウトはPOSTメソッドで要求されることが多いので、両方に対応できるようにするか、一般的なPOSTで定義します
     Route::post('/logout', function () {

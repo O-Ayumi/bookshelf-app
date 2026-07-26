@@ -20,8 +20,19 @@ class Review extends Model
     {
         return $this->hasMany(Book::class);
     }
+
+    public function book()
+    {
+        return $this->belongsTo(Book::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
     public function likedByUsers()
     {
-        return $this->belongsToMany(User::class, 'review_user', 'review_id', 'usre_id')->withTimestamps();
+        return $this->belongsToMany(User::class, 'review_user', 'review_id', 'user_id')->withTimestamps();
     }
 }
