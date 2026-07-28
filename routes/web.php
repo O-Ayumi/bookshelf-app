@@ -39,9 +39,4 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/ranking', function () {
         return 'ランキング画面（未実装）';
     })->name('ranking.index');
-
-    // ログアウトはPOSTメソッドで要求されることが多いので、両方に対応できるようにするか、一般的なPOSTで定義します
-    Route::post('/logout', function () {
-        return 'ログアウト処理（未実装）';
-    })->name('logout');
 });

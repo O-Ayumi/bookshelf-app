@@ -16,7 +16,6 @@ class ReviewLikeSeeder extends Seeder
         $users = User::all();
         $reviews = Review::all();
 
-
         foreach ($reviews as $review) {
             $likeCount = rand(0, 3);
 

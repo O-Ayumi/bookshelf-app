@@ -35,7 +35,7 @@ class ReviewSeeder extends Seeder
                 '本当に素晴らしい本です。',
                 '人生で一度は読んでほしい名作です。',
                 'もっと早く出会いたかったと思わせる一冊。',
-            ]
+            ],
         ];
 
         $reviewCountPerBook = [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2];
