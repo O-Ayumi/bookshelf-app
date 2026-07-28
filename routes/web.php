@@ -23,10 +23,8 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
-Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
-
 Route::middleware(['auth'])->group(function () {
-    Route::resource('books', BookController::class);
+    Route::resource('books', BookController::class)->except(['index', 'show']);
     Route::resource('genres', GenreController::class);
 
     Route::post('books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
@@ -39,3 +37,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('reviews/{review}/like', [LikeController::class, 'toggle'])->name('reviews.like');
 });
+
+Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
+Route::resource('books', BookController::class)->only(['index', 'show']);

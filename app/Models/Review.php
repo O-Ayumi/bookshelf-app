@@ -33,6 +33,6 @@ class Review extends Model
 
     public function likedByUsers()
     {
-        return $this->belongsToMany(User::class, 'review_user', 'review_id', 'user_id')->withTimestamps();
+        return $this->belongsToMany(User::class, 'review_likes', 'review_id', 'user_id')->withTimestamps();
     }
 }
