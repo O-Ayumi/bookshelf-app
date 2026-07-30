@@ -28,7 +28,7 @@ class ReviewLikeSeeder extends Seeder
             $chosenUsers = $eligibleUsers->random(min($likeCount, $eligibleUsers->count()));
 
             foreach ($chosenUsers as $user) {
-                $user->likeedReviews()->syncWithoutDetaching([$review->id]);
+                $user->likedReviews()->syncWithoutDetaching([$review->id]);
             }
         }
     }
