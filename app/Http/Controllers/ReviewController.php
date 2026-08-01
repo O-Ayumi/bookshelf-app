@@ -43,6 +43,8 @@ class ReviewController extends Controller
      */
     public function edit(Review $review)
     {
+        $this->authorize('update', $review);
+
         $book = $review->book;
 
         return view('reviews.edit', compact('review', 'book'));
@@ -71,9 +73,11 @@ class ReviewController extends Controller
      */
     public function destroy(Review $review)
     {
-        try {
-            $this->authorize('delete', $review);
+        $this->authorize('delete', $review);
 
+        $book = $review->book;
+
+        try {
             $review->delete();
 
             return redirect()->route('books.show', $book)->with('success', 'レビューを削除しました');
