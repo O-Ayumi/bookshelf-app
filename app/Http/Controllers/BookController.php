@@ -16,7 +16,7 @@ class BookController extends Controller
      */
     public function index()
     {
-        $books = Book::with(['genres', 'user'])->latest()->paginate(10);
+        $books = Book::with(['genres', 'user'])->oldest()->paginate(10);
 
         return view('books.index', compact('books'));
     }
@@ -105,9 +105,8 @@ class BookController extends Controller
      */
     public function destroy(Book $book)
     {
+        $this->authorize('delete', $book);
         try {
-            $this->authorize('delete', $book);
-
             $book->delete();
 
             return redirect()->route('books.index')->with('success', '書籍を削除しました');
