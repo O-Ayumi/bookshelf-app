@@ -9,6 +9,7 @@ use App\Http\Requests\Api\V1\UpdateBookRequest;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class BookController extends Controller
 {
@@ -46,13 +47,13 @@ class BookController extends Controller
         $genreIds = $validated['genre_ids'] ?? [];
         unset($validated['genre_ids']);
 
-        $book = DB::transaction(function () use ($validated, $genreIds) {
-            $validated['user_id'] = auth()->id();
+        $book = DB::transaction(function () use ($validated, $genreIds, $request) {
+            $validated['user_id'] = $request->user()->id;
 
             $book = Book::create($validated);
 
-            if (! empty($genreIds)) {
-                $book->genres()->attach($genreIds);
+            if (!empty($genreIds)) {
+                $book->genres()->syncWithoutDetaching($genreIds);
             }
 
             return $book;
@@ -60,7 +61,8 @@ class BookController extends Controller
 
         $book->load(['genres', 'user']);
 
-        return (new BookResource($book))->response()->setStatusCode(201);
+        return response()->json($book, 201);
+        // return (new BookResource($book))->response()->setStatusCode(201);
     }
 
     /**
@@ -95,7 +97,7 @@ class BookController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Book $book)
+    public function destroy(Request $request, Book $book)
     {
         $book->delete();
 
