@@ -162,7 +162,10 @@ class ApiBookTest extends TestCase
             'genre_ids' => [$genre->id],
         ];
 
-        $response = $this->actingAs($user)->postJson('api/v1/books', $data);
+        // ログイン用のSanctum認証は書かずテスト内でのみトークンを発行
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $response = $this->withToken($token)->postJson('api/v1/books', $data);
 
         $response->assertCreated();
         $response->assertJsonPath('data.title', 'test');
@@ -222,7 +225,10 @@ class ApiBookTest extends TestCase
             'genre_ids' => [$genre->id],
         ];
 
-        $response = $this->putJson("api/v1/books/{$book->id}", $data);
+        // ログイン用のSanctum認証は書かずテスト内でのみトークンを発行
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $response = $this->withToken($token)->putJson("api/v1/books/{$book->id}", $data);
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.title', '更新');
@@ -259,7 +265,10 @@ class ApiBookTest extends TestCase
             'user_id' => $user->id,
         ]);
 
-        $response = $this->actingAs($user)->deleteJson("api/v1/books/{$book->id}");
+        // ログイン用のSanctum認証は書かずテスト内でのみトークンを発行
+        $token = $user->createToken('test-token')->plainTextToken;
+
+        $response = $this->withToken($token)->deleteJson("api/v1/books/{$book->id}");
 
         $response->assertNoContent();
         $this->assertDatabaseMissing('books', ['id' => $book->id]);

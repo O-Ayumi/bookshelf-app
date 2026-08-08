@@ -61,8 +61,7 @@ class BookController extends Controller
 
         $book->load(['genres', 'user']);
 
-        return response()->json($book, 201);
-        // return (new BookResource($book))->response()->setStatusCode(201);
+        return (new BookResource($book))->response()->setStatusCode(201);
     }
 
     /**
