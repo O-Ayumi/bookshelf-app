@@ -2,20 +2,25 @@
 
 namespace App\Models;
 
+use App\Enums\ReadingPlanStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Review extends Model
+class ReadingPlan extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
         'book_id',
-        'rating',
-        'comment',
+        'user_id',
+        'target_date',
+        'status',
+    ];
+
+    protected $casts = [
+        'status' => ReadingPlanStatus::class,
+        'target_date' => 'date',
     ];
 
     public function book(): BelongsTo
@@ -26,10 +31,5 @@ class Review extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function likedByUsers(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'review_likes', 'review_id', 'user_id')->withTimestamps();
     }
 }
