@@ -5,7 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // routes/api.php の一番上に追記
-Route::get('test-header', function (\Illuminate\Http\Request $request) {
+Route::get('test-header', function (Request $request) {
     return response()->json([
         'all_headers' => $request->headers->all(),
         'has_auth_header' => $request->hasHeader('Authorization'),

@@ -8,8 +8,8 @@ use App\Http\Requests\Api\V1\StoreBookRequest;
 use App\Http\Requests\Api\V1\UpdateBookRequest;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -52,7 +52,7 @@ class BookController extends Controller
 
             $book = Book::create($validated);
 
-            if (!empty($genreIds)) {
+            if (! empty($genreIds)) {
                 $book->genres()->syncWithoutDetaching($genreIds);
             }
 
