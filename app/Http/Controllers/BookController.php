@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IndexBookRequest;
 use App\Http\Requests\StoreBookRequest;
 use App\Http\Requests\UpdateBookRequest;
 use App\Models\Book;
@@ -14,9 +15,42 @@ class BookController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(IndexBookRequest $request)
     {
-        $books = Book::with(['genres', 'user'])->oldest()->paginate(10);
+        $validated = $request->validated();
+
+        $query = Book::query();
+
+        if (!empty($validated['keyword'])) {
+            $keyword = $validated['keyword'];
+            $query->where(function ($q) use ($keyword) {
+                $q->where('title', 'like', '%' . $keyword . '%')
+                    ->orwhere('author', 'like', '%' . $keyword . '%');
+            });
+        }
+
+        if (!empty($validated['genre'])) {
+            $query->where('genre_id', $validated['genre']);
+        }
+
+        $sort = $validated['sort'] ?? 'latest';
+        switch ($sort) {
+            case 'oldest':
+                $query->orderBy('created_at', 'asc');
+                break;
+            case 'title':
+                $query->orderBy('title', 'asc');
+                break;
+            case 'rating':
+                $query->orderByRaw('rating IS NULL ASC')->orderBy('rating', 'desc');
+                break;
+            case 'latest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $books = $query->paginate(10)->appends($request->query());
 
         return view('books.index', compact('books'));
     }
@@ -49,7 +83,7 @@ class BookController extends Controller
             return redirect()->route('books.show', ['book' => $book->id])->with('success', '書籍を登録しました');
 
         } catch (Exception $e) {
-            Log::error('書籍登録失敗:'.$e->getMessage());
+            Log::error('書籍登録失敗:' . $e->getMessage());
 
             return back()->withInput()->with('error', '登録に失敗しました');
         }
@@ -94,7 +128,7 @@ class BookController extends Controller
 
             return redirect()->route('books.show', $book)->with('success', '書籍を更新しました');
         } catch (Exception $e) {
-            Log::error('書籍更新失敗:'.$e->getMessage());
+            Log::error('書籍更新失敗:' . $e->getMessage());
 
             return back()->withInput()->with('error', '更新に失敗しました');
         }
@@ -111,7 +145,7 @@ class BookController extends Controller
 
             return redirect()->route('books.index')->with('success', '書籍を削除しました');
         } catch (Exception $e) {
-            Log::error('書籍削除失敗:'.$e->getMessage());
+            Log::error('書籍削除失敗:' . $e->getMessage());
 
             return back()->with('error', '削除に失敗しました');
         }
