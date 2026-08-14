@@ -10,6 +10,7 @@ class WebNotification extends Notification
     use Queueable;
 
     protected $title;
+
     protected $timing;
 
     /**

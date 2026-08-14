@@ -37,6 +37,6 @@ class ReadingPlanPolicy
      */
     public function delete(User $user, ReadingPlan $readingPlan): Response
     {
-        return $user_id === $readingPlan->user_id ? response::allow() : response::deny('この操作の権限がありません');
+        return $user_id === $readingPlan->user_id ? Response::allow() : Response::deny('この操作の権限がありません');
     }
 }
