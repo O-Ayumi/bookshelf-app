@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateBookRequest;
 use App\Models\Book;
 use App\Models\Genre;
 use Exception;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class BookController extends Controller
@@ -166,6 +167,54 @@ class BookController extends Controller
             Log::error('書籍削除失敗:' . $e->getMessage());
 
             return back()->with('error', '削除に失敗しました');
+        }
+    }
+
+    public function fetchBookByIsbn(string $isbn)
+    {
+        $cleanIsbn = str_replace(['-', ' '], '', $isbn);
+
+        try {
+            $response = Http::timeout(5)
+                ->get("https://www.googleapis.com/books/v1/volumes", [
+                    'q' => 'isbn:' . $cleanIsbn,
+                    'key' => env('GOOGLE_BOOKS_API_KEY'),
+                ]);
+
+            if ($response->failed()) {
+                Log::error("ISBN検索API通信エラー：" . $response->status());
+                return response()->json(['error' => 'API通信に失敗しました'], 500);
+            }
+
+            $data = $response->json();
+
+            if (($data['totalItems'] ?? 0) === 0 || empty($data['items'])) {
+                return response()->json(['error' => '書籍情報が見つかりませんでした'], 404);
+            }
+
+            $volumeInfo = $data['items'][0]['volumeInfo'] ?? [];
+
+            // 配列の著者名をBladeが読み込めるよう文字列に変換
+            $authors = $volumeInfo['authors'] ?? ['著者不明'];
+            $authorString = implode(', ', $authors);
+
+            // 画像URLの取得とhttps化
+            $thumbnail = $volumeInfo['imageLinks']['thumbnail'] ?? '';
+            if ($thumbnail) {
+                $thumbnail = str_replace('http://', 'https://', $thumbnail);
+            }
+
+            return response()->json([
+                'title' => $volumeInfo['title'] ?? null,
+                'author' => $authorString,
+                'description' => $volumeInfo['description'] ?? null,
+                'published_date' => $volumeInfo['publishedDate'] ?? null,
+                'image_url' => $thumbnail,
+            ]);
+
+        } catch (Exception $e) {
+            Log::error("ISBN検索中に例外が発生しました:" . $e->getMessage());
+            return response()->json(['error' => 'サーバーエラーが発生しました'], 500);
         }
     }
 }

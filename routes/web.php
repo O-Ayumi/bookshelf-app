@@ -29,6 +29,7 @@ Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('books', BookController::class);
+    route::get('/books/isbn/{isbn}', [BookController::class, 'fetchBookByIsbn'])->name('books.fetch_isbn');
 
     Route::resource('genres', GenreController::class);
 
