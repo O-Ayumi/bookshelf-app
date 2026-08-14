@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Review;
+use App\Models\Book;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -39,11 +40,17 @@ class ReportController extends Controller
             5 => $distributionRaw->get(5, 0),
         ]);
 
-        $topRatedBooks = Review::where('user_id', $user->id)
-            ->where('rating', '>=', 4)
-            ->with('book')
-            ->orderBy('rating', 'desc')
-            ->orderBy('created_at', 'desc')
+        $topRatedBooks = Book::join('reviews', 'books.id', '=', 'reviews.book_id')
+            ->where('reviews.user_id', $user->id)
+            ->where('reviews.rating', '>=', 4)
+            ->select(
+                'books.id as id',
+                'books.title as title',
+                'books.author as author',
+                'reviews.rating as rating'
+            )
+            ->orderBy('reviews.rating', 'desc')
+            ->orderBy('reviews.created_at', 'desc')
             ->take(5)
             ->get();
 
@@ -53,12 +60,12 @@ class ReportController extends Controller
             ->join('genres', 'book_genre.genre_id', '=', 'genres.id')
             ->select(
                 'genres.id as id',
-                'genres.name as genre_name',
+                'genres.name as name',
                 DB::raw('COUNT(reviews.id) as count'),
-                DB::raw('ROUND(AVG(reviews.rating), 1) as avg_rating')
+                DB::raw('ROUND(AVG(reviews.rating), 1) as average_rating')
             )
             ->groupBy('genres.id', 'genres.name')
-            ->orderBy('avg_rating', 'desc')
+            ->orderBy('average_rating', 'desc')
             ->take(5)
             ->get();
 
