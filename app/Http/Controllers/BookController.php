@@ -23,42 +23,54 @@ class BookController extends Controller
      */
     public function index(IndexBookRequest $request)
     {
+        $genres = Genre::all();
+
         $validated = $request->validated();
 
         $query = Book::query();
 
-        if (! empty($validated['keyword'])) {
+        if (!empty($validated['keyword'])) {
             $keyword = $validated['keyword'];
             $query->where(function ($q) use ($keyword) {
-                $q->where('title', 'like', '%'.$keyword.'%')
-                    ->orwhere('author', 'like', '%'.$keyword.'%');
+                $q->where('title', 'like', '%' . $keyword . '%')
+                    ->orWhere('author', 'like', '%' . $keyword . '%');
             });
         }
 
-        if (! empty($validated['genre'])) {
-            $query->where('genre_id', $validated['genre']);
+        if (!empty($validated['genre'])) {
+            $genreId = $validated['genre'];
+            $query->whereHas('genres', function ($q) use ($genreId) {
+                $q->where('book_genre.genre_id', $genreId);
+            });
         }
 
-        $sort = $validated['sort'] ?? 'latest';
+        $sort = $validated['sort'] ?? 'newest';
+
+        $query->reorder();
+
         switch ($sort) {
             case 'oldest':
-                $query->orderBy('created_at', 'asc');
+                $query->orderBy('created_at', 'asc')
+                    ->orderBy('id', 'asc');
                 break;
             case 'title':
                 $query->orderBy('title', 'asc');
                 break;
             case 'rating':
-                $query->orderByRaw('rating IS NULL ASC')->orderBy('rating', 'desc');
+                $query->withAvg('reviews', 'rating')
+                    ->orderByRaw('reviews_avg_rating IS NULL ASC')
+                    ->orderBy('reviews_avg_rating', 'desc');
                 break;
-            case 'latest':
+            case 'newest':
             default:
-                $query->orderBy('created_at', 'desc');
+                $query->orderBy('created_at', 'desc')
+                    ->orderBy('id', 'desc');
                 break;
         }
 
         $books = $query->paginate(10)->appends($request->query());
 
-        return view('books.index', compact('books'));
+        return view('books.index', compact('books', 'genres'));
     }
 
     /**
@@ -89,7 +101,7 @@ class BookController extends Controller
             return redirect()->route('books.show', ['book' => $book->id])->with('success', '書籍を登録しました');
 
         } catch (Exception $e) {
-            Log::error('書籍登録失敗:'.$e->getMessage());
+            Log::error('書籍登録失敗:' . $e->getMessage());
 
             return back()->withInput()->with('error', '登録に失敗しました');
         }
@@ -134,7 +146,7 @@ class BookController extends Controller
 
             return redirect()->route('books.show', $book)->with('success', '書籍を更新しました');
         } catch (Exception $e) {
-            Log::error('書籍更新失敗:'.$e->getMessage());
+            Log::error('書籍更新失敗:' . $e->getMessage());
 
             return back()->withInput()->with('error', '更新に失敗しました');
         }
@@ -151,7 +163,7 @@ class BookController extends Controller
 
             return redirect()->route('books.index')->with('success', '書籍を削除しました');
         } catch (Exception $e) {
-            Log::error('書籍削除失敗:'.$e->getMessage());
+            Log::error('書籍削除失敗:' . $e->getMessage());
 
             return back()->with('error', '削除に失敗しました');
         }
