@@ -32,11 +32,11 @@ class ReportController extends Controller
             ->pluck('count', 'rating');
 
         $ratingDistribution = collect([
-            0 => $distributionRaw->get(1, 0),
-            1 => $distributionRaw->get(2, 0),
-            2 => $distributionRaw->get(3, 0),
-            3 => $distributionRaw->get(4, 0),
-            4 => $distributionRaw->get(5, 0),
+            1 => $distributionRaw->get(1, 0),
+            2 => $distributionRaw->get(2, 0),
+            3 => $distributionRaw->get(3, 0),
+            4 => $distributionRaw->get(4, 0),
+            5 => $distributionRaw->get(5, 0),
         ]);
 
         $topRatedBooks = Review::where('user_id', $user->id)
@@ -52,7 +52,7 @@ class ReportController extends Controller
             ->join('book_genre', 'books.id', '=', 'book_genre.book_id')
             ->join('genres', 'book_genre.genre_id', '=', 'genres.id')
             ->select(
-                'genres.id as genre_id',
+                'genres.id as id',
                 'genres.name as genre_name',
                 DB::raw('COUNT(reviews.id) as count'),
                 DB::raw('ROUND(AVG(reviews.rating), 1) as avg_rating')
