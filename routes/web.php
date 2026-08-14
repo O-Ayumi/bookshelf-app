@@ -21,16 +21,15 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
 Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
-Route::resource('books', BookController::class)->only(['index', 'show']);
 
 Route::middleware(['auth'])->group(function () {
-    Route::resource('books', BookController::class)->except(['index', 'show']);
+    Route::resource('books', BookController::class);
+
     Route::resource('genres', GenreController::class);
 
     Route::post('books/{book}/reviews', [ReviewController::class, 'store'])->name('reviews.store');
@@ -46,6 +45,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
 
     Route::resource('reading-plans', ReadingPlanController::class);
+    Route::post('reading-plans/{reading_plan}/complete', [ReadingPlanController::class, 'complete'])->name('reading-plans.complete');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');

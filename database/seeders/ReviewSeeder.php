@@ -18,39 +18,39 @@ class ReviewSeeder extends Seeder
         $books = Book::all();
 
         $comments = [
-            3 => [
-                '入門編にはおすすめ。',
-                'やや冗長だったが内容自体はためになった。',
-                'もう少し具体例が欲しかったです。',
-                '内容が専門的で上級者向けの印象でした。',
+            5 => [
+                '素晴らしい本でした！',
+                '人生が変わりました。',
+                '何度も読み返しています。',
             ],
             4 => [
-                'とても読みやすかったです。',
-                '内容は面白かったですがかなりのボリュームです。',
-                '全体的にクオリティが高い。',
-                'ためになる内容ばかりだった。',
+                'とても参考になりました。',
+                '読みやすくておすすめです。',
+                '期待通りの内容でした。',
             ],
-            5 => [
-                '傑作です。何度も読み返したくなります。',
-                '本当に素晴らしい本です。',
-                '人生で一度は読んでほしい名作です。',
-                'もっと早く出会いたかったと思わせる一冊。',
+            3 => [
+                '普通でした。',
+                '可もなく不可もなく。',
+                '期待したほどではなかった。',
+            ],
+            2 => [
+                '少し期待外れでした。',
+                '内容が薄い印象。',
+                'もう少し深掘りしてほしかった。',
+            ],
+            1 => [
+                '残念ながら合いませんでした。',
+                '期待と違いました。',
             ],
         ];
 
-        $reviewCountPerBook = [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 2];
+        foreach ($books as $book) {
+            $reviewCount = rand(2, 4);
 
-        foreach ($books as $index => $book) {
-            $count = $reviewCountPerBook[$index];
+            $selectedUsers = $users->random($reviewCount);
 
-            $existingUserIds = Review::where('book_id', $book->id)->pluck('user_id')->toArray();
-
-            $eligibleUsers = $users->whereNotIn('id', $existingUserIds);
-
-            $shuffledUsers = $eligibleUsers->shuffle()->take($count);
-
-            foreach ($shuffledUsers as $user) {
-                $rating = rand(3, 5);
+            foreach ($selectedUsers as $user) {
+                $rating = rand(1, 5);
                 $commentPool = $comments[$rating];
                 $comment = $commentPool[array_rand($commentPool)];
 

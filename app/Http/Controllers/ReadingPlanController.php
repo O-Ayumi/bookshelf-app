@@ -61,6 +61,7 @@ class ReadingPlanController extends Controller
 
         $readingPlan->update([
             'status' => ReadingPlanStatus::Completed,
+            'completed_at' => now(),
         ]);
 
         return redirect()->route('books.show', $readingPlan->book_id)->with('success', '読了しました');
