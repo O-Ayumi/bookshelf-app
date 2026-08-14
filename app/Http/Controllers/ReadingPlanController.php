@@ -15,7 +15,9 @@ class ReadingPlanController extends Controller
     {
         $readingPlans = Auth::user()->readingPlans()->with('book')->orderBy('target_date', 'asc')->get();
 
-        return view('reading-plans.index', compact('readingPlans'));
+        $currentStatus = 'Unread';
+
+        return view('reading-plans.index', compact('readingPlans', 'currentStatus'));
     }
 
     public function store(StoreReadingPlanRequest $request)
@@ -42,7 +44,7 @@ class ReadingPlanController extends Controller
 
     public function update(UpdateReadingPlanRequest $request, ReadingPlan $readingPlan)
     {
-        $this->authorize('update', $readingplan);
+        $this->authorize('update', $readingPlan);
 
         $validated = $request->validated();
 

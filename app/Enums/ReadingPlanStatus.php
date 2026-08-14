@@ -6,7 +6,7 @@ enum ReadingPlanStatus: string
 {
     case Unread = 'unread';
     case Reading = 'reading';
-    case Conpleted = 'completed';
+    case Completed = 'completed';
 
     public function label(): string
     {
