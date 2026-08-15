@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
+    /**
+     * マイ読書レポート一覧画面の表示
+     * @return View
+     */
     public function index(): View
     {
         $user = Auth::user();

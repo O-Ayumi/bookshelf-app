@@ -16,7 +16,9 @@ use Illuminate\Support\Facades\DB;
 class BookController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * 書籍一覧画面を取得
+     * @param IndexBookRequest $request　検索・絞り込み条件を含むリクエスト
+     * @return AnonymousResourceCollection　書籍データのコレクションレスポンス
      */
     public function index(IndexBookRequest $request): AnonymousResourceCollection
     {
@@ -41,7 +43,10 @@ class BookController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * 新しい書籍情報を登録する
+     * 
+     * @param StoreBookRequest $request　バリデーション済のリクエスト
+     * @return JsonResponse　ステータスコード201を含む登録成功レスポンス
      */
     public function store(StoreBookRequest $request): JsonResponse
     {
@@ -54,7 +59,7 @@ class BookController extends Controller
 
             $book = Book::create($validated);
 
-            if (! empty($genreIds)) {
+            if (!empty($genreIds)) {
                 $book->genres()->syncWithoutDetaching($genreIds);
             }
 
@@ -67,7 +72,9 @@ class BookController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * 指定した書籍の詳細画面
+     * @param Book $book　特定の書籍
+     * @return BookResource　書籍詳細レスポンス
      */
     public function show(Book $book): BookResource
     {
@@ -77,7 +84,10 @@ class BookController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * 書籍情報の更新
+     * @param UpdateBookRequest $request　バリデーション済のリクエスト
+     * @param Book $book　特定の書籍
+     * @return BookResource　更新後の書籍詳細
      */
     public function update(UpdateBookRequest $request, Book $book): BookResource
     {
@@ -96,7 +106,10 @@ class BookController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * 書籍情報の削除
+     * @param Request $request　削除要求リクエスト
+     * @param Book $book　特定の書籍情報
+     * @return JsonResponse　ステータスコード202を含む削除成功レスポンス
      */
     public function destroy(Request $request, Book $book): JsonResponse
     {

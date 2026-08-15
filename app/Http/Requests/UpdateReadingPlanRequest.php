@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\ReadingPlanStatus;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Enum;
 
 class UpdateReadingPlanRequest extends FormRequest
 {
@@ -26,7 +26,7 @@ class UpdateReadingPlanRequest extends FormRequest
     {
         return [
             'target_date' => ['required', 'date'],
-            'status' => ['required', Rule::enum(ReadingPlanStatus::class)],
+            'status' => ['nullable', new Enum(ReadingPlanStatus::class)],
         ];
     }
 }

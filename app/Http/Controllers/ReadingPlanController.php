@@ -5,22 +5,55 @@ namespace App\Http\Controllers;
 use App\Enums\ReadingPlanStatus;
 use App\Http\Requests\StoreReadingPlanRequest;
 use App\Http\Requests\UpdateReadingPlanRequest;
+use App\Models\Book;
 use App\Models\ReadingPlan;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class ReadingPlanController extends Controller
 {
-    public function index(): View
+    /**
+     * 読書計画の絞り込み条件を含む一覧表示
+     * @return View
+     */
+    public function index(Request $request): View
     {
-        $readingPlans = Auth::user()->readingPlans()->with('book')->orderBy('target_date', 'asc')->get();
+        $currentStatus = $request->input('status');
 
-        $currentStatus = 'Unread';
+        $query = Auth::user()->readingPlans()->with('book');
+
+        if ($request->filled('status')) {
+            $query->where('status', $currentStatus);
+        }
+
+        $readingPlans = $query->orderBy('target_date', 'asc')
+            ->get()
+            ->map(function (ReadingPlan $plan) {
+                return $plan;
+            });
 
         return view('reading-plans.index', compact('readingPlans', 'currentStatus'));
     }
 
+    /**
+     * 読書計画の作成画面
+     * @return View 
+     */
+    public function create(): View
+    {
+        $books = Book::orderBy('title', 'asc')->get();
+
+        return view('reading-plans.create', compact('books'));
+    }
+
+    /**
+     * 読書計画の保存
+     * 
+     * @param StoreReadingPlanRequest $request　バリデーション済のリクエスト
+     * @return RedirectResponse　読書計画一覧へ遷移
+     */
     public function store(StoreReadingPlanRequest $request): RedirectResponse
     {
         $validated = $request->validated();
@@ -34,29 +67,63 @@ class ReadingPlanController extends Controller
         return redirect()->route('reading-plans.index')->with('success', '読書計画を作成しました');
     }
 
-    public function edit(ReadingPlan $readingplan): View
+    /**
+     * 読書計画編集画面表示
+     * 
+     * @param ReadingPlan $readingPlan　特定の計画
+     * @return View
+     */
+    public function edit(ReadingPlan $readingPlan): View
     {
-        $this->authorize('update', $readingplan);
+        $this->authorize('update', $readingPlan);
 
         $statuses = ReadingPlanStatus::cases();
 
-        return view('reading-plans.edit', compact('readingplan', 'statuses'));
+        return view('reading-plans.edit', compact('readingPlan', 'statuses'));
     }
 
+    /**
+     * 読書計画編集
+     * @param UpdateReadingPlanRequest $request　バリデーション済のリクエスト
+     * @param ReadingPlan $readingPlan　特定の計画
+     * @return RedirectResponse　読書計画一覧へ遷移
+     */
     public function update(UpdateReadingPlanRequest $request, ReadingPlan $readingPlan): RedirectResponse
     {
         $this->authorize('update', $readingPlan);
 
         $validated = $request->validated();
 
+        $status = isset($validated['status']) ? ReadingPlanStatus::from($validated['status']) : $readingPlan->status;
+
         $readingPlan->update([
             'target_date' => $validated['target_date'],
-            'status' => ReadingPlanStatus::from($validated['status']),
+            'status' => $status,
         ]);
 
         return redirect()->route('reading-plans.index')->with('success', '読書計画を更新しました');
     }
 
+    /**
+     * 読書計画の削除
+     * @param ReadingPlan $readingPlan　特定の計画
+     * @return RedirectResponse　読書計画一覧へ遷移
+     */
+    public function destroy(ReadingPlan $readingPlan): RedirectResponse
+    {
+        $this->authorize('delete', $readingPlan);
+
+        $readingPlan->delete();
+
+        return redirect()->route('reading-plans.index')->with('success', '読書計画を削除しました');
+    }
+
+    /**
+     * 読了時の処理
+     * 
+     * @param ReadingPlan $readingPlan　特定の計画
+     * @return RedirectResponse　書籍詳細へ遷移
+     */
     public function complete(ReadingPlan $readingPlan): RedirectResponse
     {
         $this->authorize('update', $readingPlan);
@@ -69,12 +136,20 @@ class ReadingPlanController extends Controller
         return redirect()->route('books.show', $readingPlan->book_id)->with('success', '読了しました');
     }
 
-    public function destroy(ReadingPlan $readingPlan): RedirectResponse
+    /**
+     * 読書ステータスを読書中に変更
+     * 
+     * @param ReadingPlan $readingPlan 特定の計画
+     * @return RedirectResponse 読書計画一覧へ遷移
+     */
+    public function start(ReadingPlan $readingPlan): RedirectResponse
     {
-        $this->authorize('delete', $readingPlan);
+        $this->authorize('update', $readingPlan);
 
-        $readingPlan->delete();
+        $readingPlan->update([
+            'status' => ReadingPlanStatus::Reading,
+        ]);
 
-        return redirect()->route('reading-plans.index')->with('success', '読書計画を削除しました');
+        return redirect()->route('reading-plans.index')->with('success', '読書を開始しました');
     }
 }

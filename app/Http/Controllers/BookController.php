@@ -23,7 +23,10 @@ class BookController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * 書籍一覧と検索機能
+     * 
+     * @param IndexBookRequest $request バリデーション済のリクエスト
+     * @return View 一覧画面と絞り込み表示、10件ごとのページネーション
      */
     public function index(IndexBookRequest $request): View
     {
@@ -33,15 +36,15 @@ class BookController extends Controller
 
         $query = Book::query();
 
-        if (! empty($validated['keyword'])) {
+        if (!empty($validated['keyword'])) {
             $keyword = $validated['keyword'];
             $query->where(function ($q) use ($keyword) {
-                $q->where('title', 'like', '%'.$keyword.'%')
-                    ->orWhere('author', 'like', '%'.$keyword.'%');
+                $q->where('title', 'like', '%' . $keyword . '%')
+                    ->orWhere('author', 'like', '%' . $keyword . '%');
             });
         }
 
-        if (! empty($validated['genre'])) {
+        if (!empty($validated['genre'])) {
             $genreId = $validated['genre'];
             $query->whereHas('genres', function ($q) use ($genreId) {
                 $q->where('book_genre.genre_id', $genreId);
@@ -78,7 +81,7 @@ class BookController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * 書籍登録画面を表示
      */
     public function create(): View
     {
@@ -88,7 +91,10 @@ class BookController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * 書籍情報を登録する
+     * 
+     * @param StoreBookRequest $request バリデーション済のリクエスト
+     * @return RedirectResponse 詳細画面へリダイレクト、エラー時の戻り遷移
      */
     public function store(StoreBookRequest $request): RedirectResponse
     {
@@ -105,14 +111,17 @@ class BookController extends Controller
             return redirect()->route('books.show', ['book' => $book->id])->with('success', '書籍を登録しました');
 
         } catch (Exception $e) {
-            Log::error('書籍登録失敗:'.$e->getMessage());
+            Log::error('書籍登録失敗:' . $e->getMessage());
 
             return back()->withInput()->with('error', '登録に失敗しました');
         }
     }
 
     /**
-     * Display the specified resource.
+     * 書籍情報の詳細表示
+     * 
+     * @param Book $book 特定の書籍
+     * @return View 書籍詳細情報の表示
      */
     public function show(Book $book): View
     {
@@ -122,7 +131,10 @@ class BookController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * 書籍編集
+     * 
+     * @param Book $book 特定の書籍
+     * @return View 書籍編集画面の表示
      */
     public function edit(Book $book): View
     {
@@ -134,7 +146,10 @@ class BookController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * 書籍情報の更新
+     * 
+     * @param UpdateBookRequest $request, Book $book バリデーション済の特定の書籍情報
+     * @return RedirectResponse 書籍詳細画面へ遷移、エラー時の戻り遷移
      */
     public function update(UpdateBookRequest $request, Book $book): RedirectResponse
     {
@@ -150,14 +165,17 @@ class BookController extends Controller
 
             return redirect()->route('books.show', $book)->with('success', '書籍を更新しました');
         } catch (Exception $e) {
-            Log::error('書籍更新失敗:'.$e->getMessage());
+            Log::error('書籍更新失敗:' . $e->getMessage());
 
             return back()->withInput()->with('error', '更新に失敗しました');
         }
     }
 
     /**
-     * Remove the specified resource from storage.
+     * 書籍の削除
+     * 
+     * @param Book $book 特定の書籍情報
+     * @return RedirectResponse 削除後一覧へ遷移、エラー時の戻り遷移
      */
     public function destroy(Book $book): RedirectResponse
     {
@@ -167,12 +185,18 @@ class BookController extends Controller
 
             return redirect()->route('books.index')->with('success', '書籍を削除しました');
         } catch (Exception $e) {
-            Log::error('書籍削除失敗:'.$e->getMessage());
+            Log::error('書籍削除失敗:' . $e->getMessage());
 
             return back()->with('error', '削除に失敗しました');
         }
     }
 
+    /**
+     * Google Books APIを利用してISBNから書籍情報を取得
+     * 
+     * @param string $isbn　ハイフンやスペースを含む可能性のあるISBNコード
+     * @return JsonResponse　書籍データまたはエラーメッセージのJSONレスポンス
+     */
     public function fetchBookByIsbn(string $isbn): JsonResponse
     {
         $cleanIsbn = str_replace(['-', ' '], '', $isbn);
@@ -180,12 +204,12 @@ class BookController extends Controller
         try {
             $response = Http::timeout(5)
                 ->get('https://www.googleapis.com/books/v1/volumes', [
-                    'q' => 'isbn:'.$cleanIsbn,
+                    'q' => 'isbn:' . $cleanIsbn,
                     'key' => env('GOOGLE_BOOKS_API_KEY'),
                 ]);
 
             if ($response->failed()) {
-                Log::error('ISBN検索API通信エラー：'.$response->status());
+                Log::error('ISBN検索API通信エラー：' . $response->status());
 
                 return response()->json(['error' => 'API通信に失敗しました'], 500);
             }
@@ -217,7 +241,7 @@ class BookController extends Controller
             ]);
 
         } catch (Exception $e) {
-            Log::error('ISBN検索中に例外が発生しました:'.$e->getMessage());
+            Log::error('ISBN検索中に例外が発生しました:' . $e->getMessage());
 
             return response()->json(['error' => 'サーバーエラーが発生しました'], 500);
         }

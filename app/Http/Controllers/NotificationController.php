@@ -7,6 +7,10 @@ use Illuminate\Http\RedirectResponse;
 
 class NotificationController extends Controller
 {
+    /**
+     * 通知機能の一覧表示
+     * @return View
+     */
     public function index(): View
     {
         $notifications = auth()->user()->notifications;
@@ -14,7 +18,13 @@ class NotificationController extends Controller
         return view('notifications.index', compact('notifications'));
     }
 
-    public function read($id): RedirectResponse
+    /**
+     * 通知の既読機能
+     * 
+     * @param string $id　通知のID
+     * @return RedirectResponse　成功メッセージと戻り遷移
+     */
+    public function read(string $id): RedirectResponse
     {
         $notification = auth()->user()->notifications()->findOrFail($id);
 
