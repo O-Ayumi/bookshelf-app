@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Review;
 use App\Models\Book;
+use App\Models\Review;
+use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $user = Auth::user();
 

@@ -7,6 +7,8 @@ use App\Http\Requests\UpdateReviewRequest;
 use App\Models\Book;
 use App\Models\Review;
 use Exception;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Log;
 
 class ReviewController extends Controller
@@ -14,7 +16,7 @@ class ReviewController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreReviewRequest $request, Book $book)
+    public function store(StoreReviewRequest $request, Book $book): RedirectResponse
     {
         try {
             $reviewData = $request->validated();
@@ -41,7 +43,7 @@ class ReviewController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Review $review)
+    public function edit(Review $review): View
     {
         $this->authorize('update', $review);
 
@@ -53,7 +55,7 @@ class ReviewController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateReviewRequest $request, Review $review)
+    public function update(UpdateReviewRequest $request, Review $review): RedirectResponse
     {
         try {
             $this->authorize('update', $review);
@@ -71,7 +73,7 @@ class ReviewController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Review $review)
+    public function destroy(Review $review): RedirectResponse
     {
         $this->authorize('delete', $review);
 

@@ -6,11 +6,13 @@ use App\Enums\ReadingPlanStatus;
 use App\Http\Requests\StoreReadingPlanRequest;
 use App\Http\Requests\UpdateReadingPlanRequest;
 use App\Models\ReadingPlan;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 
 class ReadingPlanController extends Controller
 {
-    public function index()
+    public function index(): View
     {
         $readingPlans = Auth::user()->readingPlans()->with('book')->orderBy('target_date', 'asc')->get();
 
@@ -19,7 +21,7 @@ class ReadingPlanController extends Controller
         return view('reading-plans.index', compact('readingPlans', 'currentStatus'));
     }
 
-    public function store(StoreReadingPlanRequest $request)
+    public function store(StoreReadingPlanRequest $request): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -32,7 +34,7 @@ class ReadingPlanController extends Controller
         return redirect()->route('reading-plans.index')->with('success', '読書計画を作成しました');
     }
 
-    public function edit(ReadingPlan $readingplan)
+    public function edit(ReadingPlan $readingplan): View
     {
         $this->authorize('update', $readingplan);
 
@@ -41,7 +43,7 @@ class ReadingPlanController extends Controller
         return view('reading-plans.edit', compact('readingplan', 'statuses'));
     }
 
-    public function update(UpdateReadingPlanRequest $request, ReadingPlan $readingPlan)
+    public function update(UpdateReadingPlanRequest $request, ReadingPlan $readingPlan): RedirectResponse
     {
         $this->authorize('update', $readingPlan);
 
@@ -55,7 +57,7 @@ class ReadingPlanController extends Controller
         return redirect()->route('reading-plans.index')->with('success', '読書計画を更新しました');
     }
 
-    public function complete(ReadingPlan $readingPlan)
+    public function complete(ReadingPlan $readingPlan): RedirectResponse
     {
         $this->authorize('update', $readingPlan);
 
@@ -67,7 +69,7 @@ class ReadingPlanController extends Controller
         return redirect()->route('books.show', $readingPlan->book_id)->with('success', '読了しました');
     }
 
-    public function destroy(ReadingPlan $readingPlan)
+    public function destroy(ReadingPlan $readingPlan): RedirectResponse
     {
         $this->authorize('delete', $readingPlan);
 

@@ -8,7 +8,9 @@ use App\Http\Requests\Api\V1\StoreBookRequest;
 use App\Http\Requests\Api\V1\UpdateBookRequest;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
@@ -16,7 +18,7 @@ class BookController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(IndexBookRequest $request)
+    public function index(IndexBookRequest $request): AnonymousResourceCollection
     {
         $query = Book::with(['genres'])->withAvg('reviews as average_rating', 'rating')->withCount('reviews');
 
@@ -41,7 +43,7 @@ class BookController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreBookRequest $request)
+    public function store(StoreBookRequest $request): JsonResponse
     {
         $validated = $request->validated();
         $genreIds = $validated['genre_ids'] ?? [];
@@ -67,7 +69,7 @@ class BookController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Book $book)
+    public function show(Book $book): BookResource
     {
         $book->load(['genres', 'reviews']);
 
@@ -77,7 +79,7 @@ class BookController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateBookRequest $request, Book $book)
+    public function update(UpdateBookRequest $request, Book $book): BookResource
     {
         $validated = $request->validated();
         $genreIds = $validated['genre_ids'] ?? [];
@@ -96,7 +98,7 @@ class BookController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Request $request, Book $book)
+    public function destroy(Request $request, Book $book): JsonResponse
     {
         $book->delete();
 
