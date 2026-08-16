@@ -11,6 +11,7 @@ use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -197,7 +198,7 @@ class BookController extends Controller
      * @param  string  $isbn  ハイフンやスペースを含む可能性のあるISBNコード
      * @return JsonResponse　書籍データまたはエラーメッセージのJSONレスポンス
      */
-    public function fetchBookByIsbn(string $isbn): JsonResponse
+    public function fetchBookByIsbn(Request $request, string $isbn): JsonResponse
     {
         $cleanIsbn = str_replace(['-', ' '], '', $isbn);
 

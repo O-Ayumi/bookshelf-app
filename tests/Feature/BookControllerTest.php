@@ -7,6 +7,7 @@ use App\Models\Genre;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
@@ -202,5 +203,73 @@ class BookControllerTest extends TestCase
         $this->assertDatabaseMissing('book_genre', ['book_id' => $book->id]);
         $this->assertDatabaseMissing('reviews', ['id' => $review->id]);
         $this->assertDatabaseMissing('favorites', ['book_id' => $book->id]);
+    }
+
+    /** @test */
+    public function キーワードとジャンルによる書籍検索、絞り込み機能が正しく動作する(): void
+    {
+        $user = User::factory()->create();
+        $genreA = Genre::factory()->create(['name' => '小説']);
+        $genreB = Genre::factory()->create(['name' => 'ビジネス']);
+
+        $matchedBook = Book::factory()->create([
+            'title' => '吾輩は猫である',
+            'author' => '夏目漱石',
+        ]);
+
+        $matchedBook->genres()->attach($genreA->id);
+
+        $unmatchedBook = Book::factory()->create([
+            'title' => 'PHP入門',
+            'author' => '山田太郎',
+        ]);
+
+        $unmatchedBook->genres()->attach($genreB->id);
+
+        $response = $this->actingAs($user)->get(route('books.index', [
+            'keyword' => '吾輩',
+            'genre' => $genreA->id,
+        ]));
+
+        $response->assertStatus(200);
+        $response->assertSee($matchedBook->title);
+        $response->assertDontSee($unmatchedBook->title);
+    }
+
+    /** @test */
+    public function isb_n検索が正常に動作する(): void
+    {
+        $user = User::factory()->create();
+        $isbn = '9782512548695';
+
+        Http::fake([
+            '*googleapis.com*' => Http::response([
+                'totalItems' => 1,
+                'items' => [
+                    [
+                        'volumeInfo' => [
+                            'title' => 'モック化されたテスト本',
+                            'authors' => ['テスト著者A', 'テスト著者B'],
+                            'description' => '外部APIテスト用のモックデータ',
+                            'publishedDate' => '2026-08-16',
+                            'imageLinks' => [
+                                'thumbnail' => 'http://example.com',
+                            ],
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('books.fetch_isbn', ['isbn' => $isbn]));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'title' => 'モック化されたテスト本',
+            'author' => 'テスト著者A, テスト著者B',
+            'description' => '外部APIテスト用のモックデータ',
+            'published_date' => '2026-08-16',
+            'image_url' => 'https://example.com',
+        ]);
     }
 }
