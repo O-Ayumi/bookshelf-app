@@ -9,14 +9,26 @@ use Illuminate\Console\Command;
 
 class SendTimingNotifications extends Command
 {
+    /**
+     * コマンドを実行するためのArtisan名
+     *
+     * @var string
+     */
     protected $signature = 'app:send-timing-notifications';
 
+    /**
+     * コマンドの概要説明
+     *
+     * @var string
+     */
     protected $description = '読書計画の期日に応じたタイミング通知を自動送信します';
 
     /**
-     * Execute the console command.
+     * コンソールコマンドの処理
+     *
+     * @return int コマンドの終了ステータス
      */
-    public function handle()
+    public function handle(): int
     {
         $today = Carbon::today();
 
@@ -27,7 +39,7 @@ class SendTimingNotifications extends Command
         }
 
         // 当日通知
-        $onDueDatePlans = ReadingPlan::whereDate('taerget_date', $today)->get();
+        $onDueDatePlans = ReadingPlan::whereDate('target_date', $today)->get();
         foreach ($onDueDatePlans as $plan) {
             $plan->user->notify(new WebNotification('読了目標日になりました', 'on_due_date'));
         }
@@ -41,5 +53,7 @@ class SendTimingNotifications extends Command
         }
 
         $this->info('読書計画の通知送信が完了しました');
+
+        return Command::SUCCESS;
     }
 }
