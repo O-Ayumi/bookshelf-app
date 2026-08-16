@@ -7,8 +7,8 @@ use Illuminate\Http\RedirectResponse;
 
 /**
  * いいねしたレビューのトグル処理
- * 
- * @param Review $review　特定のレビュー
+ *
+ * @param  Review  $review  特定のレビュー
  * @return RedirectResponse　いいねの追加と解除
  */
 class LikeController extends Controller

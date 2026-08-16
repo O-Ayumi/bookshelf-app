@@ -2,13 +2,14 @@
 
 namespace App\Http\Requests\Api\V1;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateBookRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * ユーザーがこのリクエストを実行する権限があるか判定する
+     *
+     * @return bool 認可結果
      */
     public function authorize(): bool
     {
@@ -16,9 +17,9 @@ class UpdateBookRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * バリデーションルールを定義する
      *
-     * @return array<string, ValidationRule|array<mixed>|string>
+     * @return array<string, mixed> バリデーションルールの配列
      */
     public function rules(): array
     {

@@ -9,7 +9,6 @@ class NotificationController extends Controller
 {
     /**
      * 通知機能の一覧表示
-     * @return View
      */
     public function index(): View
     {
@@ -20,8 +19,8 @@ class NotificationController extends Controller
 
     /**
      * 通知の既読機能
-     * 
-     * @param string $id　通知のID
+     *
+     * @param  string  $id  通知のID
      * @return RedirectResponse　成功メッセージと戻り遷移
      */
     public function read(string $id): RedirectResponse

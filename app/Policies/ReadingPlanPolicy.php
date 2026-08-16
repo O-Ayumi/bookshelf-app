@@ -25,7 +25,11 @@ class ReadingPlanPolicy
     }
 
     /**
-     * Determine whether the user can update the model.
+     * ユーザーが特定の読書計画を更新できるか判定する
+     *
+     * @param  User  $user  ログイン中のユーザーモデル
+     * @param  ReadingPlan  $readingPlan  対象の読書計画モデル
+     * @return Response 認可レスポンス
      */
     public function update(User $user, ReadingPlan $readingPlan): Response
     {
@@ -33,7 +37,11 @@ class ReadingPlanPolicy
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * ユーザーが特定の読書計画を削除できるか判定する
+     *
+     * @param  User  $user  ログイン中のユーザーモデル
+     * @param  ReadingPlan  $readingPlan  対象の読書計画モデル
+     * @return Response 認可レスポンス
      */
     public function delete(User $user, ReadingPlan $readingPlan): Response
     {

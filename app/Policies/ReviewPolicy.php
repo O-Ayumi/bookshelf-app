@@ -9,7 +9,11 @@ use Illuminate\Auth\Access\Response;
 class ReviewPolicy
 {
     /**
-     * Determine whether the user can update the model.
+     * ユーザーが特定のレビューを更新できるか判定する
+     *
+     * @param  User  $user  ログイン中のユーザーモデル
+     * @param  Review  $review  対象のレビューモデル
+     * @return Response 認可レスポンス
      */
     public function update(User $user, Review $review): Response
     {
@@ -17,7 +21,11 @@ class ReviewPolicy
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * ユーザーが特定のレビューを削除できるか判定する
+     *
+     * @param  User  $user  ログイン中のユーザーモデル
+     * @param  Review  $review  対象のレビューモデル
+     * @return Response 認可レスポンス
      */
     public function delete(User $user, Review $review): Response
     {

@@ -15,8 +15,9 @@ class ReviewController extends Controller
 {
     /**
      * レビューの登録
-     * @param StoreReviewRequest $request　バリデーション済のリクエスト
-     * @param Book $book　特定の書籍ID
+     *
+     * @param  StoreReviewRequest  $request  バリデーション済のリクエスト
+     * @param  Book  $book  特定の書籍ID
      * @return RedirectResponse　書籍詳細に遷移
      */
     public function store(StoreReviewRequest $request, Book $book): RedirectResponse
@@ -37,7 +38,7 @@ class ReviewController extends Controller
 
             return back()->with('success', 'レビューを投稿しました');
         } catch (Exception $e) {
-            Log::error('レビュー投稿失敗:' . $e->getMessage());
+            Log::error('レビュー投稿失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '投稿に失敗しました');
         }
@@ -45,8 +46,8 @@ class ReviewController extends Controller
 
     /**
      * レビューの編集画面の表示
-     * @param Review $review　特定のレビュー
-     * @return View
+     *
+     * @param  Review  $review  特定のレビュー
      */
     public function edit(Review $review): View
     {
@@ -59,8 +60,9 @@ class ReviewController extends Controller
 
     /**
      * レビューの編集
-     * @param UpdateReviewRequest $request　バリデーション済のリクエスト
-     * @param Review $review　特定のレビュー
+     *
+     * @param  UpdateReviewRequest  $request  バリデーション済のリクエスト
+     * @param  Review  $review  特定のレビュー
      * @return RedirectResponse　書籍詳細に遷移
      */
     public function update(UpdateReviewRequest $request, Review $review): RedirectResponse
@@ -72,7 +74,7 @@ class ReviewController extends Controller
 
             return redirect()->route('books.show', $review->book_id)->with('success', 'レビューを更新しました');
         } catch (Exception $e) {
-            Log::error('レビュー更新失敗:' . $e->getMessage());
+            Log::error('レビュー更新失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '更新に失敗しました');
         }
@@ -80,8 +82,8 @@ class ReviewController extends Controller
 
     /**
      * レビューの削除
-     * 
-     * @param Review $review　特定のレビュー
+     *
+     * @param  Review  $review  特定のレビュー
      * @return RedirectResponse　書籍詳細画面に遷移
      */
     public function destroy(Review $review): RedirectResponse
@@ -95,7 +97,7 @@ class ReviewController extends Controller
 
             return redirect()->route('books.show', $book)->with('success', 'レビューを削除しました');
         } catch (Exception $e) {
-            Log::error('レビュー削除失敗:' . $e->getMessage());
+            Log::error('レビュー削除失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '削除に失敗しました');
         }

@@ -16,7 +16,6 @@ class ReadingPlanController extends Controller
 {
     /**
      * 読書計画の絞り込み条件を含む一覧表示
-     * @return View
      */
     public function index(Request $request): View
     {
@@ -39,7 +38,6 @@ class ReadingPlanController extends Controller
 
     /**
      * 読書計画の作成画面
-     * @return View 
      */
     public function create(): View
     {
@@ -50,8 +48,8 @@ class ReadingPlanController extends Controller
 
     /**
      * 読書計画の保存
-     * 
-     * @param StoreReadingPlanRequest $request　バリデーション済のリクエスト
+     *
+     * @param  StoreReadingPlanRequest  $request  バリデーション済のリクエスト
      * @return RedirectResponse　読書計画一覧へ遷移
      */
     public function store(StoreReadingPlanRequest $request): RedirectResponse
@@ -69,9 +67,8 @@ class ReadingPlanController extends Controller
 
     /**
      * 読書計画編集画面表示
-     * 
-     * @param ReadingPlan $readingPlan　特定の計画
-     * @return View
+     *
+     * @param  ReadingPlan  $readingPlan  特定の計画
      */
     public function edit(ReadingPlan $readingPlan): View
     {
@@ -84,8 +81,9 @@ class ReadingPlanController extends Controller
 
     /**
      * 読書計画編集
-     * @param UpdateReadingPlanRequest $request　バリデーション済のリクエスト
-     * @param ReadingPlan $readingPlan　特定の計画
+     *
+     * @param  UpdateReadingPlanRequest  $request  バリデーション済のリクエスト
+     * @param  ReadingPlan  $readingPlan  特定の計画
      * @return RedirectResponse　読書計画一覧へ遷移
      */
     public function update(UpdateReadingPlanRequest $request, ReadingPlan $readingPlan): RedirectResponse
@@ -106,7 +104,8 @@ class ReadingPlanController extends Controller
 
     /**
      * 読書計画の削除
-     * @param ReadingPlan $readingPlan　特定の計画
+     *
+     * @param  ReadingPlan  $readingPlan  特定の計画
      * @return RedirectResponse　読書計画一覧へ遷移
      */
     public function destroy(ReadingPlan $readingPlan): RedirectResponse
@@ -120,8 +119,8 @@ class ReadingPlanController extends Controller
 
     /**
      * 読了時の処理
-     * 
-     * @param ReadingPlan $readingPlan　特定の計画
+     *
+     * @param  ReadingPlan  $readingPlan  特定の計画
      * @return RedirectResponse　書籍詳細へ遷移
      */
     public function complete(ReadingPlan $readingPlan): RedirectResponse
@@ -138,8 +137,8 @@ class ReadingPlanController extends Controller
 
     /**
      * 読書ステータスを読書中に変更
-     * 
-     * @param ReadingPlan $readingPlan 特定の計画
+     *
+     * @param  ReadingPlan  $readingPlan  特定の計画
      * @return RedirectResponse 読書計画一覧へ遷移
      */
     public function start(ReadingPlan $readingPlan): RedirectResponse

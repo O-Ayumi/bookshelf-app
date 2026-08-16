@@ -24,11 +24,21 @@ class ReadingPlan extends Model
         'completed_at' => 'datetime',
     ];
 
+    /**
+     * 読書計画に紐づく書籍を取得
+     *
+     * @return BelongsTo　書籍モデルとの多対多リレーション
+     */
     public function book(): BelongsTo
     {
         return $this->belongsTo(Book::class);
     }
 
+    /**
+     * 読書計画に紐づくユーザーを取得
+     *
+     * @return BelongsTo　ユーザーモデルとの一対多リレーション
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -14,7 +14,6 @@ class GenreController extends Controller
 {
     /**
      * ジャンル一覧表示
-     * @return View
      */
     public function index(): View
     {
@@ -25,7 +24,6 @@ class GenreController extends Controller
 
     /**
      * ジャンル作成画面の表示
-     * @return View
      */
     public function create(): View
     {
@@ -34,8 +32,8 @@ class GenreController extends Controller
 
     /**
      * 新規ジャンルの保存
-     * 
-     * @param StoreGenreRequest $request　バリデーション済のリクエスト
+     *
+     * @param  StoreGenreRequest  $request  バリデーション済のリクエスト
      * @return RedirectResponse　ジャンル一覧へ遷移
      */
     public function store(StoreGenreRequest $request): RedirectResponse
@@ -45,7 +43,7 @@ class GenreController extends Controller
 
             return redirect()->route('genres.index')->with('success', 'ジャンルを登録しました');
         } catch (Exception $e) {
-            Log::error('ジャンル登録失敗:' . $e->getMessage());
+            Log::error('ジャンル登録失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '登録に失敗しました');
         }
@@ -53,9 +51,8 @@ class GenreController extends Controller
 
     /**
      * ジャンル詳細表示
-     * 
-     * @param Genre $genre　特定のジャンル
-     * @return View
+     *
+     * @param  Genre  $genre  特定のジャンル
      */
     public function show(Genre $genre): View
     {
@@ -66,8 +63,8 @@ class GenreController extends Controller
 
     /**
      * ジャンル編集画面の表示
-     * @param Genre $genre　特定のジャンル
-     * @return View
+     *
+     * @param  Genre  $genre  特定のジャンル
      */
     public function edit(Genre $genre): View
     {
@@ -76,8 +73,9 @@ class GenreController extends Controller
 
     /**
      * ジャンル更新
-     * @param UpdateGenreRequest $request バリデーション済のリクエスト
-     * @param Genre $genre　特定のジャンル
+     *
+     * @param  UpdateGenreRequest  $request  バリデーション済のリクエスト
+     * @param  Genre  $genre  特定のジャンル
      * @return RedirectResponse　ジャンル一覧へ遷移
      */
     public function update(UpdateGenreRequest $request, Genre $genre): RedirectResponse
@@ -87,7 +85,7 @@ class GenreController extends Controller
 
             return redirect()->route('genres.index')->with('success', 'ジャンル名を更新しました');
         } catch (Exception $e) {
-            Log::error('ジャンル更新失敗:' . $e->getMessage());
+            Log::error('ジャンル更新失敗:'.$e->getMessage());
 
             return back()->withInput()->with('error', '更新に失敗しました');
         }
@@ -95,7 +93,8 @@ class GenreController extends Controller
 
     /**
      * ジャンル削除
-     * @param Genre $genre　特定のジャンル
+     *
+     * @param  Genre  $genre  特定のジャンル
      * @return RedirectResponse　ジャンル一覧へ遷移
      */
     public function destroy(Genre $genre): RedirectResponse
@@ -105,7 +104,7 @@ class GenreController extends Controller
 
             return redirect()->route('genres.index')->with('success', 'ジャンルを削除しました');
         } catch (Exception $e) {
-            Log::error('ジャンル削除失敗:' . $e->getMessage());
+            Log::error('ジャンル削除失敗:'.$e->getMessage());
 
             return back()->with('error', '削除に失敗しました');
         }

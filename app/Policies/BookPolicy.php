@@ -9,7 +9,11 @@ use Illuminate\Auth\Access\Response;
 class BookPolicy
 {
     /**
-     * Determine whether the user can update the model.
+     * ユーザーが特定の書籍情報を更新できるか判定する
+     *
+     * @param  User  $user  ログイン中のユーザーモデル
+     * @param  Book  $book  対象の書籍モデル
+     * @return Response 認可レスポンス
      */
     public function update(User $user, Book $book): Response
     {
@@ -17,7 +21,11 @@ class BookPolicy
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * ユーザーが特定の書籍情報を削除できるか判定する
+     *
+     * @param  User  $user  ログイン中のユーザーモデル
+     * @param  Book  $book  対象の書籍モデル
+     * @return Response 認可レスポンス
      */
     public function delete(User $user, Book $book): Response
     {

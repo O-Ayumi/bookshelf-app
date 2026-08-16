@@ -10,7 +10,8 @@ class FavoriteController extends Controller
 {
     /**
      * お気に入り一覧画面の表示
-     * @return View　
+     *
+     * @return View
      */
     public function index(): View
     {
@@ -21,8 +22,8 @@ class FavoriteController extends Controller
 
     /**
      * お気に入り書籍のトグル処理
-     * 
-     * @param Book $book　特定の書籍
+     *
+     * @param  Book  $book  特定の書籍
      * @return RedirectResponse　お気に入りの追加と解除
      */
     public function toggle(Book $book): RedirectResponse
