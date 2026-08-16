@@ -288,4 +288,37 @@ class ApiBookTest extends TestCase
 
         $response->assertStatus(404);
     }
+
+    /** @test */
+    public function 未ログイン状態で書籍登録した場合401が返される(): void
+    {
+        $response = $this->postJson('api/v1/books', [
+            'title' => 'テスト書籍',
+            'author' => 'テスト著者',
+        ]);
+
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function 未ログイン状態で書籍更新した場合401が返される(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->putJson("/api/v1/books/{$book->id}", [
+            'title' => '更新タイトル',
+        ]);
+
+        $response->assertStatus(401);
+    }
+
+    /** @test */
+    public function 未ログイン状態で書籍削除した場合401が返される(): void
+    {
+        $book = Book::factory()->create();
+
+        $response = $this->deleteJson("/api/v1/books/{$book->id}");
+
+        $response->assertStatus(401);
+    }
 }
