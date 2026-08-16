@@ -24,14 +24,14 @@ class BookControllerTest extends TestCase
         $books = Book::factory()->count(10)->create();
         $lastBook = Book::factory()->create([
             'title' => '非表示になる11件目の本',
-            'created_at' => now()->addHour(),
+            'created_at' => now()->subDay(),
         ]);
 
         foreach ($books->concat([$lastBook]) as $book) {
             $book->genres()->attach($genre->id);
         }
 
-        $response = $this->get(route('books.index'));
+        $response = $this->actingAs($user)->get(route('books.index'));
 
         $response->assertStatus(200);
         $response->assertViewHas('books');
@@ -43,6 +43,8 @@ class BookControllerTest extends TestCase
     /** @test */
     public function 書籍詳細で基本情報とジャンルとレビュー一覧といいね数が表示される(): void
     {
+        $user = User::factory()->create();
+
         $book = Book::factory()->create([
             'title' => '詳細テスト用',
             'author' => 'テスト著者',
@@ -60,7 +62,7 @@ class BookControllerTest extends TestCase
             'comment' => '最高の読書体験でした。',
         ]);
 
-        $response = $this->get(route('books.show', $book));
+        $response = $this->actingAs($user)->get(route('books.show', $book));
 
         $response->assertStatus(200);
         $response->assertSee('詳細テスト用');

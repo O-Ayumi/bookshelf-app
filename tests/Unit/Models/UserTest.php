@@ -18,7 +18,11 @@ class UserTest extends TestCase
     /** @test */
     public function ユーザーは複数の書籍を有する(): void
     {
-        $user = User::has('books')->first();
+        $user = User::factory()->create();
+        Book::factory()->count(11)->create([
+            'user_id' => $user->id,
+        ]);
+
         $this->assertNotNull($user, 'ユーザーデータが存在しません');
 
         $this->assertInstanceOf(Collection::class, $user->books);
