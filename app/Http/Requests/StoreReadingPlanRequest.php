@@ -28,4 +28,12 @@ class StoreReadingPlanRequest extends FormRequest
             'target_date' => ['required', 'date'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'book_id.required' => '書籍を選択してください',
+            'target_date.required' => '期日を設定してください',
+        ];
+    }
 }

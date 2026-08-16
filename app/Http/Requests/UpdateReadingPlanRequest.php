@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\ReadingPlanStatus;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
 class UpdateReadingPlanRequest extends FormRequest
 {
@@ -27,7 +25,13 @@ class UpdateReadingPlanRequest extends FormRequest
     {
         return [
             'target_date' => ['required', 'date'],
-            'status' => ['nullable', new Enum(ReadingPlanStatus::class)],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'target_date.required' => '期日を設定してください',
         ];
     }
 }

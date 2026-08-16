@@ -134,21 +134,4 @@ class ReadingPlanController extends Controller
 
         return redirect()->route('books.show', $readingPlan->book_id)->with('success', '読了しました');
     }
-
-    /**
-     * 読書ステータスを読書中に変更
-     *
-     * @param  ReadingPlan  $readingPlan  特定の計画
-     * @return RedirectResponse 読書計画一覧へ遷移
-     */
-    public function start(ReadingPlan $readingPlan): RedirectResponse
-    {
-        $this->authorize('update', $readingPlan);
-
-        $readingPlan->update([
-            'status' => ReadingPlanStatus::Reading,
-        ]);
-
-        return redirect()->route('reading-plans.index')->with('success', '読書を開始しました');
-    }
 }

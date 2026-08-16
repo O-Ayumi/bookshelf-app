@@ -47,7 +47,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('reading-plans', ReadingPlanController::class);
     Route::post('reading-plans/{reading_plan}/complete', [ReadingPlanController::class, 'complete'])->name('reading-plans.complete');
-    Route::patch('reading-plans/{readingPlan}/start', [ReadingPlanController::class, 'start'])->name('reading-plans.start');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::get('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');
