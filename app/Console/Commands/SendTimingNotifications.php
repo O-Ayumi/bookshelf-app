@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\ReadingPlanStatus;
 use App\Models\ReadingPlan;
 use App\Notifications\WebNotification;
 use Carbon\Carbon;
@@ -32,6 +33,13 @@ class SendTimingNotifications extends Command
     {
         $today = Carbon::today();
 
+        // 期限を過ぎても読了していない計画を期限切れにする
+        ReadingPlan::where('target_date', '<', $today)
+            ->where('status', '!=', ReadingPlanStatus::Completed->value)
+            ->update(['status' => ReadingPlanStatus::Expired->value]);
+
+        $this->info('読書計画の通知送信が完了しました');
+
         // 三日前の通知
         $threeDaysBeforePlans = ReadingPlan::whereDate('target_date', $today->copy()->addDays(3))->get();
         foreach ($threeDaysBeforePlans as $plan) {
@@ -46,13 +54,11 @@ class SendTimingNotifications extends Command
 
         // 三日後通知
         $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', $today->copy()->subDays(3))
-            ->where('status', '!=', 'completed')
+            ->where('status', ReadingPlanStatus::Expired->value)
             ->get();
         foreach ($threeDaysAfterPlans as $plan) {
-            $plan->user->notify(new WebNotification('読了目標日から3日が経過しています', 'three_days_after'));
+            $plan->user->notify(new WebNotification('読了目標日から3日が経過しています', 'expired'));
         }
-
-        $this->info('読書計画の通知送信が完了しました');
 
         return Command::SUCCESS;
     }
