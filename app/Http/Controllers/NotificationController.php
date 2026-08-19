@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
@@ -12,7 +14,7 @@ class NotificationController extends Controller
      */
     public function index(): View
     {
-        $notifications = auth()->user()->notifications;
+        $notifications = Auth::user()->notifications()->paginate(10);
 
         return view('notifications.index', compact('notifications'));
     }
@@ -25,7 +27,11 @@ class NotificationController extends Controller
      */
     public function read(string $id): RedirectResponse
     {
-        $notification = auth()->user()->notifications()->findOrFail($id);
+        $notification = DatabaseNotification::findOrFail($id);
+
+        if ($notification->notifiable_id !== Auth::id()) {
+            abort(403, 'この操作の権限がありません');
+        }
 
         $notification->markAsRead();
 

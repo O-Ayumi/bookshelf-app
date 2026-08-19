@@ -19,8 +19,10 @@ class BookTest extends TestCase
     /** @test */
     public function 書籍はユーザーに属する(): void
     {
-        $user = User::first();
-        $book = Book::where('user_id', $user->id)->first();
+        $user = User::factory()->create();
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
 
         $this->assertNotNull($book, '指定ユーザーに紐づく書籍がありません');
         $this->assertInstanceOf(User::class, $book->user);
