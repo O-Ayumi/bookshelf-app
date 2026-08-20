@@ -272,4 +272,16 @@ class BookControllerTest extends TestCase
             'image_url' => 'https://example.com',
         ]);
     }
+
+    /** @test */
+    public function 書籍一覧・詳細はログインなしで閲覧できる(): void
+    {
+        $response = $this->get(route('books.index'));
+        $response->assertStatus(200);
+
+        $book = Book::factory()->create();
+
+        $response = $this->get(route('books.show', $book));
+        $response->assertStatus(200);
+    }
 }
