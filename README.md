@@ -29,7 +29,7 @@
 - Vite / Tailwind CSS 3.4
 - Laravel Fortify (認証)
 - phpMyAdmin
-- Laravel Sunctum
+- Laravel Sanctum
 - PHP Enum
 - API連携 (Google Books APIとの連携)
 
