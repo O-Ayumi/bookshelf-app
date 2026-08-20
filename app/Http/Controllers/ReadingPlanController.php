@@ -74,9 +74,7 @@ class ReadingPlanController extends Controller
     {
         $this->authorize('update', $readingPlan);
 
-        $statuses = ReadingPlanStatus::cases();
-
-        return view('reading-plans.edit', compact('readingPlan', 'statuses'));
+        return view('reading-plans.edit', compact('readingPlan'));
     }
 
     /**
@@ -92,11 +90,8 @@ class ReadingPlanController extends Controller
 
         $validated = $request->validated();
 
-        $status = isset($validated['status']) ? ReadingPlanStatus::from($validated['status']) : $readingPlan->status;
-
         $readingPlan->update([
             'target_date' => $validated['target_date'],
-            'status' => $status,
         ]);
 
         return redirect()->route('reading-plans.index')->with('success', '読書計画を更新しました');
