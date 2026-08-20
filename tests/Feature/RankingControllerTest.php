@@ -31,4 +31,12 @@ class RankingControllerTest extends TestCase
         $response->assertSee($bookA->title);
         $response->assertDontSee($bookB->title);
     }
+
+    /** @test */
+    public function ログインなしでランキング一覧が表示できる(): void
+    {
+        $response = $this->get(route('ranking.index'));
+
+        $response->assertStatus(200);
+    }
 }
