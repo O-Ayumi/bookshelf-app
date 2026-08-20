@@ -33,31 +33,31 @@ class SendTimingNotifications extends Command
     {
         $today = Carbon::today();
 
-        // 期限を過ぎても読了していない計画を期限切れにする
-        ReadingPlan::where('target_date', '<', $today)
-            ->where('status', '!=', ReadingPlanStatus::Completed->value)
-            ->update(['status' => ReadingPlanStatus::Expired->value]);
-
-        $this->info('読書計画の通知送信が完了しました');
-
         // 三日前の通知
         $threeDaysBeforePlans = ReadingPlan::whereDate('target_date', $today->copy()->addDays(3))->get();
         foreach ($threeDaysBeforePlans as $plan) {
-            $plan->user->notify(new WebNotification('読書計画の目標日まであと3日です', 'three_days_before'));
+            $bookTitle = $plan->book->title ?? '登録書籍';
+            $plan->user->notify(new WebNotification("「{$bookTitle}」の読書計画の目標日まであと3日です", 'three_days_before'));
         }
 
         // 当日通知
         $onDueDatePlans = ReadingPlan::whereDate('target_date', $today)->get();
         foreach ($onDueDatePlans as $plan) {
-            $plan->user->notify(new WebNotification('読了目標日になりました', 'on_due_date'));
+            $bookTitle = $plan->book->title ?? '登録書籍';
+            $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日になりました", 'on_due_date'));
         }
 
-        // 三日後通知
-        $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', $today->copy()->subDays(3))
-            ->where('status', ReadingPlanStatus::Expired->value)
+        // 三日後通知、自動ステータス更新
+        $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '<=', $today->copy()->subDays(3))
+            ->whereNotIn('status', [
+                ReadingPlanStatus::Completed->value,
+                ReadingPlanStatus::Expired->value,
+            ])
             ->get();
         foreach ($threeDaysAfterPlans as $plan) {
-            $plan->user->notify(new WebNotification('読了目標日から3日が経過しています', 'expired'));
+            $bookTitle = $plan->book->title ?? '登録書籍';
+            $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日から3日が経過しています", 'expired'));
+            $plan->update(['status' => ReadingPlanStatus::Expired->value]);
         }
 
         return Command::SUCCESS;
