@@ -283,6 +283,14 @@ http://localhost
     sail artisan test --coverage
     ```
 
+## 日時バッチ(通知・自動期限切れ)の実行
+
+読書計画の期日に応じた自動通知や、ステータスの自動「期限切れ(Expired)」変更を行うバッチ処理です。
+開発環境では実行されないため、**手動で以下のコマンドを実行してください。**
+```bash
+sail artisan app:send-timing-notifications
+```
+
 ## 機能一覧
 
 - ユーザー認証(登録、ログイン、ログアウト)
