@@ -14,7 +14,7 @@ class BookResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'id' => $this->id,
             'title' => $this->title,
             'author' => $this->author,
@@ -23,9 +23,6 @@ class BookResource extends JsonResource
             'description' => $this->description ?? '',
             'image_url' => $this->image_url ?? '',
 
-            'average_rating' => $this->average_rating ? round($this->average_rating, 1) : 0,
-            'reviews_count' => $this->reviews_count ?? 0,
-
             'genres' => $this->genres->map(function ($genre) {
                 return [
                     'id' => $genre->id,
@@ -33,19 +30,26 @@ class BookResource extends JsonResource
                 ];
             }),
 
-            'reviews' => $this->whenLoaded('reviews', function () {
-                return $this->reviews->map(function ($review) {
-                    return [
-                        'id' => $review->id,
-                        'reviewr_name' => $review->reviewr_name,
-                        'rating' => $review->rating,
-                        'comment' => $review->comment,
-                        'created_at' => $review->created_at?->toIso8601String(),
-                    ];
-                });
-            }),
-
             'created_at' => $this->created_at->toIso8601String(),
         ];
+
+        if ($request->routeIs('*.index') || isset($this->reviews_count)) {
+            $data['average_rating'] = $this->average_rating ? round($this->average_rating, 1) : 0;
+            $data['reviews_count'] = $this->reviews_count ?? 0;
+        }
+
+        if ($this->relationLoaded('reviews')) {
+            $data['reviews'] = $this->reviews->map(function ($review) {
+                return [
+                    'id' => $review->id,
+                    'reviewer_name' => $review->reviewer_name,
+                    'rating' => $review->rating,
+                    'comment' => $review->comment,
+                    'created_at' => $review->created_at?->toIso8601String(),
+                ];
+            });
+        }
+
+        return $data;
     }
 }
