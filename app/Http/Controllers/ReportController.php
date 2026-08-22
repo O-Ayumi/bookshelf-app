@@ -2,11 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Book;
 use App\Models\Review;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
@@ -17,61 +15,53 @@ class ReportController extends Controller
     {
         $user = Auth::user();
 
-        $summaryRaw = Review::where('user_id', $user->id)
-            ->selectRaw('
-                COUNT(id) as total_reviews,
-                COUNT(DISTINCT book_id) as books_read,
-                AVG(rating) as average_rating
-            ')
-            ->first();
+        $reviews = Review::where('user_id', $user->id)
+            ->with('book.genres')
+            ->get();
 
         $summary = [
-            'total_reviews' => $summaryRaw->total_reviews ?? 0,
-            'books_read' => $summaryRaw->books_read ?? 0,
-            'average_rating' => $summaryRaw->average_rating ?? 0.0,
+            'total_reviews' => $reviews->count(),
+            'books_read' => $reviews->unique('book_id')->count(),
+            'average_rating' => round($reviews->avg('rating') ?? 0.0, 1),
         ];
 
-        $distributionRaw = Review::where('user_id', $user->id)
-            ->select('rating', DB::raw('count(*) as count'))
-            ->groupBy('rating')
-            ->pluck('count', 'rating');
+        $ratingDistribution = collect([1, 2, 3, 4, 5])
+            ->mapWithKeys(fn ($rating) => [
+                $rating => $reviews->where('rating', $rating)->count(),
+            ]);
 
-        $ratingDistribution = collect([
-            1 => $distributionRaw->get(1, 0),
-            2 => $distributionRaw->get(2, 0),
-            3 => $distributionRaw->get(3, 0),
-            4 => $distributionRaw->get(4, 0),
-            5 => $distributionRaw->get(5, 0),
-        ]);
-
-        $topRatedBooks = Book::join('reviews', 'books.id', '=', 'reviews.book_id')
-            ->where('reviews.user_id', $user->id)
-            ->where('reviews.rating', '>=', 4)
-            ->select(
-                'books.id as id',
-                'books.title as title',
-                'books.author as author',
-                'reviews.rating as rating'
-            )
-            ->orderBy('reviews.rating', 'desc')
-            ->orderBy('reviews.created_at', 'desc')
+        $topRatedBooks = $reviews
+            ->filter(fn ($review) => $review->rating >= 4)
+            ->sortByDesc('created_at')
+            ->sortByDesc('rating')
             ->take(5)
-            ->get();
+            ->map(fn ($review) => [
+                'id' => $review->book->id ?? null,
+                'title' => $review->book->title ?? '',
+                'author' => $review->book->author ?? '',
+                'rating' => $review->rating,
+            ])
+            ->values()
+            ->all();
 
-        $genreRatings = Review::where('reviews.user_id', $user->id)
-            ->join('books', 'reviews.book_id', '=', 'books.id')
-            ->join('book_genre', 'books.id', '=', 'book_genre.book_id')
-            ->join('genres', 'book_genre.genre_id', '=', 'genres.id')
-            ->select(
-                'genres.id as id',
-                'genres.name as name',
-                DB::raw('COUNT(reviews.id) as count'),
-                DB::raw('ROUND(AVG(reviews.rating), 1) as average_rating')
+        $genreRatings = $reviews
+            ->flatMap(fn ($review) => ($review->book->genres ?? collect())->map(fn ($genre) => [
+                'genre_id' => $genre->id,
+                'genre_name' => $genre->name,
+                'rating' => $review->rating,
+            ])
             )
-            ->groupBy('genres.id', 'genres.name')
-            ->orderBy('average_rating', 'desc')
+            ->groupBy('genre_id')
+            ->map(fn ($group) => [
+                'id' => $group->first()['genre_id'],
+                'name' => $group->first()['genre_name'],
+                'count' => $group->count(),
+                'average_rating' => round($group->avg('rating'), 1),
+            ])
+            ->sortByDesc('average_rating')
             ->take(5)
-            ->get();
+            ->values()
+            ->all();
 
         $stats = [
             'summary' => $summary,

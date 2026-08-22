@@ -60,6 +60,14 @@ class SendTimingNotifications extends Command
             $plan->update(['status' => ReadingPlanStatus::Expired->value]);
         }
 
+        // 期日を過ぎた計画を期限切れにする
+        ReadingPlan::where('target_date', '<', $today)
+            ->whereNotIn('status', [
+                ReadingPlanStatus::Completed->value,
+                ReadingPlanStatus::Expired->value,
+            ])
+            ->update(['status' => ReadingPlanStatus::Expired->value]);
+
         return Command::SUCCESS;
     }
 }

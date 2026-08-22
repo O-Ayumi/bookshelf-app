@@ -226,7 +226,7 @@ class ReadingPlanControllerTest extends TestCase
             'user_id' => $user->id,
             'book_id' => $plan->book_id,
             'target_date' => $targetDate.' 00:00:00',
-            'status' => 'unread',
+            'status' => 'in_progress',
         ]);
     }
 

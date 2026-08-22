@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -103,11 +104,15 @@ class BookController extends Controller
             $bookData = $request->validated();
             $bookData['user_id'] = auth()->id();
 
-            $book = Book::create($bookData);
+            $book = DB::transaction(function () use ($bookData, $request) {
+                $createdBook = Book::create($bookData);
 
-            if ($request->has('genres')) {
-                $book->genres()->attach($request->genres);
-            }
+                if ($request->has('genres')) {
+                    $createdBook->genres()->attach($request->genres);
+                }
+
+                return $createdBook;
+            });
 
             return redirect()->route('books.show', ['book' => $book->id])->with('success', '書籍を登録しました');
 
@@ -157,12 +162,10 @@ class BookController extends Controller
         try {
             $this->authorize('update', $book);
 
-            $book->update($request->validated());
-            if ($request->has('genres')) {
-                $book->genres()->sync($request->genres);
-            } else {
-                $book->genres()->detach();
-            }
+            DB::transaction(function () use ($request, $book) {
+                $book->update($request->only(['title', 'author']));
+                $book->genres()->sync($request->input('genres'));
+            });
 
             return redirect()->route('books.show', $book)->with('success', '書籍を更新しました');
         } catch (Exception $e) {
@@ -182,7 +185,10 @@ class BookController extends Controller
     {
         $this->authorize('delete', $book);
         try {
-            $book->delete();
+            DB::transaction(function () use ($book) {
+                $book->genres()->detach();
+                $book->delete();
+            });
 
             return redirect()->route('books.index')->with('success', '書籍を削除しました');
         } catch (Exception $e) {

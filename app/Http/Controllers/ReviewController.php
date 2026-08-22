@@ -9,6 +9,7 @@ use App\Models\Review;
 use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ReviewController extends Controller
@@ -26,13 +27,15 @@ class ReviewController extends Controller
             $reviewData = $request->validated();
             $userId = auth()->id();
 
-            Review::updateOrCreate([
-                'user_id' => $userId,
-                'book_id' => $book->id,
-            ], [
-                'rating' => $reviewData['rating'],
-                'comment' => $reviewData['comment'] ?? null,
-            ]);
+            DB::transaction(function () use ($userId, $book, $reviewData) {
+                Review::updateOrCreate([
+                    'user_id' => $userId,
+                    'book_id' => $book->id,
+                ], [
+                    'rating' => $reviewData['rating'],
+                    'comment' => $reviewData['comment'] ?? null,
+                ]);
+            });
 
             $book->unsetRelation('reviews');
 

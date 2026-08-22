@@ -3,15 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Book;
+use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class FavoriteController extends Controller
 {
     /**
      * お気に入り一覧画面の表示
-     *
-     * @return View
      */
     public function index(): View
     {
@@ -28,8 +29,16 @@ class FavoriteController extends Controller
      */
     public function toggle(Book $book): RedirectResponse
     {
-        auth()->user()->favoriteBooks()->toggle($book->id);
+        try {
+            DB::transaction(function () use ($book) {
+                auth()->user()->favoriteBooks()->toggle($book->id);
+            });
 
-        return back()->with('success', 'お気に入りを更新しました');
+            return back()->with('success', 'お気に入りを更新しました');
+        } catch (Exception $e) {
+            Log::error('お気に入りトグル処理失敗:'.$e->getMessage());
+
+            return back()->with('error', '処理に失敗しました。');
+        }
     }
 }

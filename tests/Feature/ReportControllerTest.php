@@ -60,12 +60,12 @@ class ReportControllerTest extends TestCase
                 && $stats['rating_distribution'][2] === 0
                 && $stats['rating_distribution'][1] === 1;
 
-            $topBooksValid = $stats['top_rated_books']->count() === 1
-                && $stats['top_rated_books']->first()->id === $book1->id;
+            $topBooksValid = count($stats['top_rated_books']) === 1
+                && $stats['top_rated_books'][0]['id'] === $book1->id;
 
-            $genreValid = $stats['genre_ratings']->count() === 2
-                && $stats['genre_ratings']->first()->id === $genreA->id
-                && $stats['genre_ratings']->last()->id === $genreB->id;
+            $genreValid = count($stats['genre_ratings']) === 2
+                && $stats['genre_ratings'][0]['id'] === $genreA->id
+                && $stats['genre_ratings'][1]['id'] === $genreB->id;
 
             return $summaryValid && $distributionValid && $topBooksValid && $genreValid;
         });

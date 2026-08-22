@@ -100,6 +100,10 @@ class GenreController extends Controller
     public function destroy(Genre $genre): RedirectResponse
     {
         try {
+            if ($genre->books()->exists()) {
+                return back()->with('error', '書籍が紐づいているジャンルは削除できません');
+            }
+
             $genre->delete();
 
             return redirect()->route('genres.index')->with('success', 'ジャンルを削除しました');

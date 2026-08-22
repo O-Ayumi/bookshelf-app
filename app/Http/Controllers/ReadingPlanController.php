@@ -7,6 +7,7 @@ use App\Http\Requests\StoreReadingPlanRequest;
 use App\Http\Requests\UpdateReadingPlanRequest;
 use App\Models\Book;
 use App\Models\ReadingPlan;
+use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -90,9 +91,17 @@ class ReadingPlanController extends Controller
 
         $validated = $request->validated();
 
-        $readingPlan->update([
+        $newTargetDate = Carbon::parse($request->input('target_date'));
+        $today = Carbon::today();
+        $updateData = [
             'target_date' => $validated['target_date'],
-        ]);
+        ];
+
+        if ($readingPlan->status !== ReadingPlanStatus::Completed->value && $newTargetDate->greaterThanOrEqualTo($today)) {
+            $updateData['status'] = ReadingPlanStatus::Reading->value;
+        }
+
+        $readingPlan->update($updateData);
 
         return redirect()->route('reading-plans.index')->with('success', '読書計画を更新しました');
     }
