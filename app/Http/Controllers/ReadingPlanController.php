@@ -12,6 +12,8 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class ReadingPlanController extends Controller
 {
@@ -21,8 +23,16 @@ class ReadingPlanController extends Controller
     public function index(Request $request): View
     {
         $currentStatus = $request->input('status');
+        $user = Auth::user();
 
-        $query = Auth::user()->readingPlans()->with('book');
+        DB::transaction(function () use ($user) {
+            $user->readingPlans()
+                ->where('status', ReadingPlanStatus::Reading->value)
+                ->where('target_date', '<', now()->toDateString())
+                ->update(['status' => ReadingPlanStatus::Unread->value]);
+        });
+
+        $query = $user->readingPlans()->with('book');
 
         if ($request->filled('status')) {
             $query->where('status', $currentStatus);
@@ -56,11 +66,23 @@ class ReadingPlanController extends Controller
     public function store(StoreReadingPlanRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $user = Auth::user();
 
-        Auth::user()->readingPlans()->create([
+        $exists = $user->readingPlans()
+            ->where('book_id', $validated['book_id'])
+            ->whereIn('status', [ReadingPlanStatus::Reading])
+            ->exists();
+
+        if ($exists) {
+            throw ValidationException::withMessages([
+                'book_id' => 'この書籍はすでに読書計画が進行中です',
+            ]);
+        }
+
+        $user->readingPlans()->create([
             'book_id' => $validated['book_id'],
             'target_date' => $validated['target_date'],
-            'status' => ReadingPlanStatus::Unread,
+            'status' => ReadingPlanStatus::Reading,
         ]);
 
         return redirect()->route('reading-plans.index')->with('success', '読書計画を作成しました');
@@ -125,7 +147,7 @@ class ReadingPlanController extends Controller
      * 読了時の処理
      *
      * @param  ReadingPlan  $readingPlan  特定の計画
-     * @return RedirectResponse　書籍詳細へ遷移
+     * @return RedirectResponse　読書計画一覧へ遷移
      */
     public function complete(ReadingPlan $readingPlan): RedirectResponse
     {
@@ -136,6 +158,6 @@ class ReadingPlanController extends Controller
             'completed_at' => now(),
         ]);
 
-        return redirect()->route('books.show', $readingPlan->book_id)->with('success', '読了しました');
+        return redirect()->route('reading-plans.index')->with('success', '読了しました');
     }
 }

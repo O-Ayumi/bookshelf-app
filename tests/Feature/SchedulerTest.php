@@ -24,7 +24,7 @@ class SchedulerTest extends TestCase
         $threeDaysBeforePlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'target_date' => $today->copy()->addDays(3)->format('Y-m-d 00:00:00'),
-            'status' => ReadingPlanStatus::Unread->value,
+            'status' => ReadingPlanStatus::Reading->value,
         ]);
 
         $onDuedatePlan = ReadingPlan::factory()->create([
@@ -36,20 +36,20 @@ class SchedulerTest extends TestCase
         $threeDaysAfterPlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'target_date' => $today->copy()->subDays(3)->format('Y-m-d 00:00:00'),
-            'status' => ReadingPlanStatus::Reading->value,
+            'status' => ReadingPlanStatus::Unread->value,
         ]);
 
         $pastPlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'target_date' => $today->copy()->subDay()->format('Y-m-d 00:00:00'),
-            'status' => ReadingPlanStatus::Unread->value,
+            'status' => ReadingPlanStatus::Reading->value,
         ]);
 
         $this->artisan('app:send-timing-notifications')->assertExitCode(0);
 
         $this->assertDatabaseHas('reading_plans', [
             'id' => $pastPlan->id,
-            'status' => ReadingPlanStatus::Expired->value,
+            'status' => ReadingPlanStatus::Unread->value,
         ]);
 
         $this->assertEquals(3, $user->unreadNotifications()->count());

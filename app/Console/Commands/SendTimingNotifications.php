@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use App\Enums\ReadingPlanStatus;
 use App\Models\ReadingPlan;
 use App\Notifications\WebNotification;
-use Carbon\Carbon;
 use Illuminate\Console\Command;
 
 class SendTimingNotifications extends Command
@@ -31,7 +30,7 @@ class SendTimingNotifications extends Command
      */
     public function handle(): int
     {
-        $today = Carbon::today();
+        $today = now()->startOfDay();
 
         // 三日前の通知
         $threeDaysBeforePlans = ReadingPlan::whereDate('target_date', $today->copy()->addDays(3))->get();
@@ -47,26 +46,22 @@ class SendTimingNotifications extends Command
             $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日になりました", 'on_due_date'));
         }
 
-        // 三日後通知、自動ステータス更新
-        $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '<=', $today->copy()->subDays(3))
-            ->whereNotIn('status', [
-                ReadingPlanStatus::Completed->value,
-                ReadingPlanStatus::Expired->value,
-            ])
+        // 三日後通知
+        $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '=', $today->copy()->subDays(3))
+            ->where('status', ReadingPlanStatus::Unread->value)
             ->get();
+
         foreach ($threeDaysAfterPlans as $plan) {
             $bookTitle = $plan->book->title ?? '登録書籍';
             $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日から3日が経過しています", 'expired'));
-            $plan->update(['status' => ReadingPlanStatus::Expired->value]);
         }
 
-        // 期日を過ぎた計画を期限切れにする
-        ReadingPlan::where('target_date', '<', $today)
-            ->whereNotIn('status', [
-                ReadingPlanStatus::Completed->value,
-                ReadingPlanStatus::Expired->value,
+        // 期日を過ぎた計画を未読にする
+        ReadingPlan::where('target_date', '<', $today->toDateString())
+            ->where('status', [
+                ReadingPlanStatus::Reading->value,
             ])
-            ->update(['status' => ReadingPlanStatus::Expired->value]);
+            ->update(['status' => ReadingPlanStatus::Unread->value]);
 
         return Command::SUCCESS;
     }

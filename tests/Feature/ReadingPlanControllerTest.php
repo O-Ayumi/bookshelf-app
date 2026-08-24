@@ -78,7 +78,7 @@ class ReadingPlanControllerTest extends TestCase
 
         $response = $this->actingAs($user)->post(route('reading-plans.complete', $plan->id));
 
-        $response->assertRedirect(route('books.show', $plan->book_id));
+        $response->assertRedirect(route('reading-plans.index'));
         $response->assertSessionHas('success', '読了しました');
         $this->assertEquals(
             ReadingPlanStatus::Completed,
@@ -180,7 +180,7 @@ class ReadingPlanControllerTest extends TestCase
             'user_id' => $user->id,
             'book_id' => $book->id,
             'target_date' => $targetDate.' 00:00:00',
-            'status' => 'unread',
+            'status' => 'in_progress',
         ]);
     }
 

@@ -285,7 +285,7 @@ http://localhost
 
 ## 日時バッチ(通知・自動期限切れ)の実行
 
-読書計画の期日に応じた自動通知や、ステータスの自動「期限切れ(Expired)」変更を行うバッチ処理です。
+読書計画の期日に応じた自動通知や、ステータスの自動変更を行うバッチ処理です。
 開発環境では実行されないため、**手動で以下のコマンドを実行してください。**
 ```bash
 sail artisan app:send-timing-notifications
@@ -321,21 +321,3 @@ Sanctum認証を使った公開APIです。全エンドポイントは `/api/v1`
 | PUT | /api/v1/books/{book} | 書籍の更新(Sanctum認証) |
 | DELETE | /api/v1/books/{book} | 書籍の削除(Sanctum認証) |
 
-## Bladeファイルの変更点
-
-読書計画の期日から三日後に自動的にステータスが「期限切れ」に変更される使用に伴い、以下のフロントエンドを編集しています。
-
-* **対象ファイル:** `resources/views/notifications/index.blade.php`
-* **変更内容:** 期日三日後の通知に期限切れ(expired)を追加
-
-    ```
-    'three_days_after', 'expired' => [
-        'border' => 'bg-red-500',
-        'iconBg' => $isUnread ? 'bg-red-100' : 'bg-gray-100',
-        'iconColor' => $isUnread ? 'text-red-600' : 'text-gray-400',
-        'icon' => 'warning',
-        ],
-    ```
-
-> **設計に関する補足**
-> `reading-plans` （読書計画）テーブルには、`user_id` と `book_id` に対するユニーク制約をあえて設計していません。同一ユーザーが書籍を期間を開けて繰り返し読むケースを想定し、1冊の書籍に対して複数の読書計画を残せるように設計したためです。

@@ -42,7 +42,7 @@
                                         'iconColor' => $isUnread ? 'text-yellow-700' : 'text-gray-400',
                                         'icon' => 'clock',
                                     ],
-                                    'three_days_after', 'expired' => [
+                                    'three_days_after' => [
                                         'border' => 'bg-red-500',
                                         'iconBg' => $isUnread ? 'bg-red-100' : 'bg-gray-100',
                                         'iconColor' => $isUnread ? 'text-red-600' : 'text-gray-400',
