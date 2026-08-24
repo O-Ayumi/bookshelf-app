@@ -112,9 +112,25 @@ class ReadingPlanController extends Controller
         $this->authorize('update', $readingPlan);
 
         $validated = $request->validated();
+        $user = Auth::user();
 
         $newTargetDate = Carbon::parse($request->input('target_date'));
         $today = Carbon::today();
+
+        if ($readingPlan->status !== ReadingPlanStatus::Completed->value && $newTargetDate->greaterThanOrEqualTo($today)) {
+            $exists = $user->readingPlans()
+                ->where('book_id', $readingPlan->book_id)
+                ->where('id', '!=', $readingPlan->id)
+                ->whereIn('status', [ReadingPlanStatus::Reading])
+                ->exists();
+
+            if ($exists) {
+                throw ValidationException::withMessages([
+                    'target_date' => 'この書籍はすでに読書計画が進行中のため、期日を延長できません',
+                ]);
+            }
+        }
+
         $updateData = [
             'target_date' => $validated['target_date'],
         ];
