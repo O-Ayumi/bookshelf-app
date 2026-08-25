@@ -33,35 +33,35 @@ class SendTimingNotifications extends Command
         $today = now()->startOfDay();
 
         // 三日前の通知
-        $threeDaysBeforePlans = ReadingPlan::whereDate('target_date', $today->copy()->addDays(3))->get();
+        $threeDaysBeforePlans = ReadingPlan::whereDate('target_date', $today->copy()->addDays(3))
+            ->where('status', ReadingPlanStatus::Reading->value)
+            ->get();
+
         foreach ($threeDaysBeforePlans as $plan) {
             $bookTitle = $plan->book->title ?? '登録書籍';
             $plan->user->notify(new WebNotification("「{$bookTitle}」の読書計画の目標日まであと3日です", 'three_days_before'));
         }
 
         // 当日通知
-        $onDueDatePlans = ReadingPlan::whereDate('target_date', $today)->get();
+        $onDueDatePlans = ReadingPlan::whereDate('target_date', $today)
+            ->where('status', ReadingPlanStatus::Reading->value)
+            ->get();
+
         foreach ($onDueDatePlans as $plan) {
             $bookTitle = $plan->book->title ?? '登録書籍';
             $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日になりました", 'on_due_date'));
         }
 
-        // 三日後通知
+        // 三日後通知と自動期限切れ(Auto-expire化)
         $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '=', $today->copy()->subDays(3))
-            ->where('status', ReadingPlanStatus::Unread->value)
+            ->where('status', ReadingPlanStatus::Reading->value)
             ->get();
 
         foreach ($threeDaysAfterPlans as $plan) {
             $bookTitle = $plan->book->title ?? '登録書籍';
             $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日から3日が経過しています", 'expired'));
+            $plan->update(['status' => ReadingPlanStatus::Unread->value]);
         }
-
-        // 期日を過ぎた計画を未読にする
-        ReadingPlan::where('target_date', '<', $today->toDateString())
-            ->where('status', [
-                ReadingPlanStatus::Reading->value,
-            ])
-            ->update(['status' => ReadingPlanStatus::Unread->value]);
 
         return Command::SUCCESS;
     }

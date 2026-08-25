@@ -273,6 +273,11 @@ http://localhost
 
 ## テスト実行
 
+    テスト実行、日時パッチの動作確認のためログインユーザーを
+    メールアドレス： `yamada@example.com`
+    パスワード： `password`
+    で設定してください。
+
     ```bash
     sail artisan test
     ```

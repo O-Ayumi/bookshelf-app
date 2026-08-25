@@ -12,7 +12,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ReadingPlanController extends Controller
@@ -24,14 +23,6 @@ class ReadingPlanController extends Controller
     {
         $currentStatus = $request->input('status');
         $user = Auth::user();
-
-        DB::transaction(function () use ($user) {
-            $user->readingPlans()
-                ->where('status', ReadingPlanStatus::Reading->value)
-                ->where('target_date', '<', now()->toDateString())
-                ->update(['status' => ReadingPlanStatus::Unread->value]);
-        });
-
         $query = $user->readingPlans()->with('book');
 
         if ($request->filled('status')) {
