@@ -52,16 +52,22 @@ class SendTimingNotifications extends Command
             $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日になりました", 'on_due_date'));
         }
 
-        // 三日後通知と自動期限切れ(Auto-expire化)
-        $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '=', $today->copy()->subDays(3))
-            ->where('status', ReadingPlanStatus::Reading->value)
+        // 三日後通知(期日から三日以上経過かつまだ読了していないデータに通知)
+        $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '<=', $today->copy()->subDays(3))
+            ->whereIn('status', [
+                ReadingPlanStatus::Reading->value,
+                ReadingPlanStatus::Unread->value
+            ])
             ->get();
 
         foreach ($threeDaysAfterPlans as $plan) {
             $bookTitle = $plan->book->title ?? '登録書籍';
             $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日から3日が経過しています", 'expired'));
-            $plan->update(['status' => ReadingPlanStatus::Unread->value]);
         }
+
+        ReadingPlan::where('target_date', '<', $today->toDateString())
+            ->where('status', ReadingPlanStatus::Reading->value)
+            ->update(['status' => ReadingPlanStatus::Unread->value]);
 
         return Command::SUCCESS;
     }

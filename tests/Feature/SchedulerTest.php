@@ -36,7 +36,7 @@ class SchedulerTest extends TestCase
         $threeDaysAfterPlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'target_date' => $today->copy()->subDays(3)->format('Y-m-d 00:00:00'),
-            'status' => ReadingPlanStatus::Reading->value,
+            'status' => ReadingPlanStatus::Unread->value,
         ]);
 
         $pastPlan = ReadingPlan::factory()->create([
@@ -49,7 +49,7 @@ class SchedulerTest extends TestCase
 
         $this->assertDatabaseHas('reading_plans', [
             'id' => $pastPlan->id,
-            'status' => ReadingPlanStatus::Reading->value,
+            'status' => ReadingPlanStatus::Unread->value,
         ]);
 
         $this->assertEquals(3, $user->unreadNotifications()->count());
