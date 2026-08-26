@@ -53,10 +53,10 @@ class SendTimingNotifications extends Command
         }
 
         // 三日後通知(期日から三日以上経過かつまだ読了していないデータに通知)
-        $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '<=', $today->copy()->subDays(3))
+        $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '=', $today->copy()->subDays(3))
             ->whereIn('status', [
                 ReadingPlanStatus::Reading->value,
-                ReadingPlanStatus::Unread->value
+                ReadingPlanStatus::Unread->value,
             ])
             ->get();
 
