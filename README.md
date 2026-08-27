@@ -121,7 +121,7 @@ erDiagram
 
     reading_plans {
         bigint_unsigned id PK
-        bigint_unsigned book_id FK
+        bigint_unsigned book_id FK "UNIQUE(book_id, user_id)"
         bigint_unsigned user_id FK
         date target_date
         varchar_100 status
@@ -308,7 +308,7 @@ sail artisan app:send-timing-notifications
 - お気に入り書籍を一覧表示
 - ランキング画面でレビュー平均のTOP10書籍を表示
 - マイ読書レポートで基本サマリー、評価分布、高評価書籍TOP5、ジャンル別評価傾向TOP5を表示
-- 読書計画一覧・登録・状態の絞り込み表示・編集・削除
+- 読書計画一覧・登録・ステータス(状態)での絞り込み表示・編集・削除
 - 読書計画一覧の読了ボタンで状態の更新
 - 通知一覧表示・既読機能
 - 日時パッチ(期日超過時の状態を自動的に変更)

@@ -31,10 +31,7 @@ class ReadingPlanController extends Controller
         }
 
         $readingPlans = $query->orderBy('target_date', 'asc')
-            ->get()
-            ->map(function (ReadingPlan $plan) {
-                return $plan;
-            });
+            ->get();
 
         return view('reading-plans.index', compact('readingPlans', 'currentStatus'));
     }
@@ -60,18 +57,7 @@ class ReadingPlanController extends Controller
         $validated = $request->validated();
         $user = Auth::user();
 
-        $exists = $user->readingPlans()
-            ->where('book_id', $validated['book_id'])
-            ->whereIn('status', [ReadingPlanStatus::Reading])
-            ->exists();
-
-        if ($exists) {
-            throw ValidationException::withMessages([
-                'book_id' => 'この書籍はすでに読書計画が進行中です',
-            ]);
-        }
-
-        $user->readingPlans()->create([
+        Auth::user()->readingPlans()->create([
             'book_id' => $validated['book_id'],
             'target_date' => $validated['target_date'],
             'status' => ReadingPlanStatus::Reading,

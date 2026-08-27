@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ReadingPlanStatus;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\facades\Auth;
+use Illuminate\Validation\Rule;
 
 class StoreReadingPlanRequest extends FormRequest
 {
@@ -24,7 +27,13 @@ class StoreReadingPlanRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'book_id' => ['required', 'exists:books,id'],
+            'book_id' => [
+                'required',
+                'exists:books,id',
+                Rule::unique('reading_plans', 'book_id')
+                    ->where('user_id', Auth::id())
+                    ->where('status', ReadingPlanStatus::Reading->value),
+            ],
             'target_date' => ['required', 'date'],
         ];
     }
@@ -33,6 +42,7 @@ class StoreReadingPlanRequest extends FormRequest
     {
         return [
             'book_id.required' => '書籍を選択してください',
+            'book_id.unique' => 'すでにこの書籍の読書計画が進行中です',
             'target_date.required' => '期日を設定してください',
         ];
     }

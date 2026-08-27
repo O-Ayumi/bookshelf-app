@@ -321,4 +321,25 @@ class ApiBookTest extends TestCase
 
         $response->assertStatus(401);
     }
+
+    /** @test */
+    public function 書き込み系操作の認可エラー時403が返される(): void
+    {
+        $user = User::factory()->create();
+        $otherUser = User::factory()->create();
+        $genre = Genre::factory()->create();
+        $book = Book::factory()->create(['user_id' => $user->id]);
+
+        $putResponse = $this->actingAs($otherUser)->putJson("/api/v1/books/{$book->id}", [
+            'title' => '更新の認可エラー',
+            'author' => $book->author,
+            'isbn' => $book->isbn,
+            'published_date' => $book->published_date ? $book->published_date->format('Y-m-d') : '2026-01-01',
+            'genre_ids' => [$genre->id],
+        ]);
+        $putResponse->assertStatus(403);
+
+        $deleteResponse = $this->actingAs($otherUser)->deleteJson("/api/v1/books/{$book->id}");
+        $deleteResponse->assertStatus(403);
+    }
 }

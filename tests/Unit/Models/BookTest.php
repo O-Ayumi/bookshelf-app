@@ -4,6 +4,7 @@ namespace Tests\Unit\Models;
 
 use App\Models\Book;
 use App\Models\Genre;
+use App\Models\ReadingPlan;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -105,5 +106,14 @@ class BookTest extends TestCase
 
         $this->assertDatabaseMissing('book_genre', ['book_id' => $bookId]);
         $this->assertDatabaseMissing('favorites', ['book_id' => $bookId]);
+    }
+
+    /** @test */
+    public function 書籍は複数の読書計画を持つ(): void
+    {
+        $book = Book::has('readingPlans')->first();
+
+        $this->assertInstanceOf(Collection::class, $book->readingPlans);
+        $this->assertInstanceOf(ReadingPlan::class, $book->readingPlans->first());
     }
 }

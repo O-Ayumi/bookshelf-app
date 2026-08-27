@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Book;
+use App\Models\ReadingPlan;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -73,5 +74,14 @@ class UserTest extends TestCase
 
         $this->assertInstanceOf(Collection::class, $user->reviews);
         $this->assertEquals($user->id, $user->reviews->first()->user_id);
+    }
+
+    /** @test */
+    public function ユーザーは複数の読書計画を持つ(): void
+    {
+        $user = User::has('readingPlans')->first();
+
+        $this->assertInstanceOf(Collection::class, $user->readingPlans);
+        $this->assertInstanceOf(ReadingPlan::class, $user->readingPlans->first());
     }
 }
