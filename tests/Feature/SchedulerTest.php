@@ -16,9 +16,8 @@ class SchedulerTest extends TestCase
     /** @test */
     public function スケジュールコマンドが正しく通知とステータス変更を行う(): void
     {
+        $this->travelTo(now()->setTime(20, 0, 0));
         $today = Carbon::today();
-        Carbon::setTestNow($today);
-
         $user = User::factory()->create();
 
         $threeDaysBeforePlan = ReadingPlan::factory()->create([
@@ -36,7 +35,7 @@ class SchedulerTest extends TestCase
         $threeDaysAfterPlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'target_date' => $today->copy()->subDays(3)->format('Y-m-d 00:00:00'),
-            'status' => ReadingPlanStatus::Unread->value,
+            'status' => ReadingPlanStatus::Reading->value,
         ]);
 
         $pastPlan = ReadingPlan::factory()->create([
@@ -49,7 +48,7 @@ class SchedulerTest extends TestCase
 
         $this->assertDatabaseHas('reading_plans', [
             'id' => $pastPlan->id,
-            'status' => ReadingPlanStatus::Unread->value,
+            'status' => ReadingPlanStatus::Expired->value,
         ]);
 
         $this->assertEquals(3, $user->unreadNotifications()->count());

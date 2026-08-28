@@ -56,7 +56,6 @@ class SendTimingNotifications extends Command
         $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '=', $today->copy()->subDays(3))
             ->whereIn('status', [
                 ReadingPlanStatus::Reading->value,
-                ReadingPlanStatus::Unread->value,
             ])
             ->get();
 
@@ -67,7 +66,7 @@ class SendTimingNotifications extends Command
 
         ReadingPlan::where('target_date', '<', $today->toDateString())
             ->where('status', ReadingPlanStatus::Reading->value)
-            ->update(['status' => ReadingPlanStatus::Unread->value]);
+            ->update(['status' => ReadingPlanStatus::Expired->value]);
 
         return Command::SUCCESS;
     }
