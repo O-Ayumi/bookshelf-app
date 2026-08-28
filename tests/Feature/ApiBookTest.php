@@ -249,7 +249,12 @@ class ApiBookTest extends TestCase
         ]);
         $nonExistenId = $book->id + 99999;
 
-        $response = $this->actingAs($user)->putJson("api/v1/books/{$nonExistenId}");
+        $response = $this->actingAs($user)->putJson("api/v1/books/{$nonExistenId}", [
+            'title' => '存在しない本への更新テスト',
+            'author' => 'テスト著者',
+            'isbn' => '9784048930545',
+            'genre_ids' => [$genre->id],
+        ]);
 
         $response->assertStatus(404);
         $response->assertJson([

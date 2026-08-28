@@ -178,6 +178,9 @@ http://localhost
     DB_DATABASE=laravel
     DB_USERNAME=sail
     DB_PASSWORD=password
+
+    # ISBN検索機能を利用する場合、各自のGoogle APIキーを設定してください
+    GOOGLE_BOOKS_API_KEY=your_api_key_here
     ```
 
 3. **Composer依存パッケージのインストール**
@@ -216,7 +219,17 @@ http://localhost
     sail artisan key:generate
     ```
 
-6. **データベースのマイグレーションと初期データ投入**
+6. **フロントエンドのビルド**
+
+    ```bash
+    sail npm install
+    sail npm install alpinejs
+    sail npm run dev
+    ```
+
+    `npm run dev` は開発中起動したままにしてください。
+
+7. **データベースのマイグレーションと初期データ投入**
 
     以下のコマンドでテーブルを作成し、ダミーデータを投入します。
 
@@ -257,15 +270,6 @@ http://localhost
     ```
 </details>
 
-7. **フロントエンドのビルド**
-
-    ```bash
-    sail npm install
-    sail npm install alpinejs
-    sail npm run dev
-    ```
-
-    `npm run dev` は開発中起動したままにしてください。
 
 8. **アプリケーションへのアクセス**
 

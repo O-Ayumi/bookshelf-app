@@ -94,7 +94,8 @@ class BookController extends Controller
      */
     public function update(UpdateBookRequest $request, Book $book): BookResource
     {
-        $this->authorize($book);
+        $this->authorize('update', $book);
+
         $validated = $request->validated();
         $genreIds = $validated['genre_ids'] ?? [];
         unset($validated['genre_ids']);
@@ -114,14 +115,14 @@ class BookController extends Controller
      *
      * @param  Request  $request  削除要求リクエスト
      * @param  Book  $book  特定の書籍情報
-     * @return JsonResponse　ステータスコード202を含む削除成功レスポンス
+     * @return JsonResponse　ステータスコード204を含む削除成功レスポンス
      */
     public function destroy(Request $request, Book $book): JsonResponse
     {
-        $this->authorize($book);
+        $this->authorize('delete', $book);
 
         $book->delete();
 
-        return response()->json(['message' => '書籍を削除しました'], 204);
+        return response()->json(null, 204);
     }
 }

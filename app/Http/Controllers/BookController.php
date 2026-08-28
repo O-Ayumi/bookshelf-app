@@ -212,7 +212,7 @@ class BookController extends Controller
             $response = Http::timeout(5)
                 ->get('https://www.googleapis.com/books/v1/volumes', [
                     'q' => 'isbn:'.$cleanIsbn,
-                    'key' => env('GOOGLE_BOOKS_API_KEY'),
+                    'key' => config('services.google.books_api_key'),
                 ]);
 
             if ($response->failed()) {
@@ -223,13 +223,19 @@ class BookController extends Controller
 
             $data = $response->json();
 
+            if (isset($data['error'])) {
+                Log::error('Google Books API内部エラー：'.json_encode($data['error']));
+
+                return response()->json(['error' => 'API内部でエラーが発生しました'], 500);
+            }
+
             if (($data['totalItems'] ?? 0) === 0 || empty($data['items'])) {
                 return response()->json(['error' => '書籍情報が見つかりませんでした'], 404);
             }
 
             $volumeInfo = $data['items'][0]['volumeInfo'] ?? [];
 
-            // 配列の著者名をBladeが読み込めるよう文字列に変換
+            // 配列の著者名をレスポンス用に文字列に変換
             $authors = $volumeInfo['authors'] ?? ['著者不明'];
             $authorString = implode(', ', $authors);
 

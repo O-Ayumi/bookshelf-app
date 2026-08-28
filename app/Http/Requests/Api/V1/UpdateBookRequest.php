@@ -25,7 +25,8 @@ class UpdateBookRequest extends FormRequest
     {
         $rules = (new StoreBookRequest)->rules();
 
-        $bookId = $this->route('book')?->id ?? $this->route('book');
+        $bookParam = $this->route('book');
+        $bookId = is_object($bookParam) ? $bookParam->id : $bookParam;
 
         $rules['isbn'] = ['required', 'string', 'max:13', "unique:books,isbn,{$bookId}"];
 
