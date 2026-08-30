@@ -64,4 +64,38 @@ class FavoriteControllerTest extends TestCase
 
         $response->assertRedirect('/login');
     }
+
+    /** @test */
+    public function お気に入りのトグル処理が正しくデータベースに反映される(): void
+    {
+        $user = User::factory()->create();
+        $book = Book::factory()->create();
+
+        $redirectUrl = route('favorites.index');
+
+        $this->assertDatabaseMissing('favorites', [
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+        ]);
+
+        $response1 = $this->actingAs($user)
+            ->from($redirectUrl)
+            ->post(route('favorites.toggle', $book));
+
+        $response1->assertRedirect($redirectUrl);
+        $this->assertDatabaseHas('favorites', [
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+        ]);
+
+        $response2 = $this->actingAs($user)
+            ->from($redirectUrl)
+            ->post(route('favorites.toggle', $book));
+
+        $response2->assertRedirect($redirectUrl);
+        $this->assertDatabaseMissing('favorites', [
+            'user_id' => $user->id,
+            'book_id' => $book->id,
+        ]);
+    }
 }
