@@ -42,6 +42,74 @@ class BookControllerTest extends TestCase
     }
 
     /** @test */
+    public function ソート機能_新着・古い順・タイトル昇順・評価順が正しく動作する(): void
+    {
+        $user = User::factory()->create();
+
+        $bookA = Book::factory()->create([
+            'title' => 'A_Book',
+            'created_at' => now()->subDays(3),
+        ]);
+        Review::factory()->create([
+            'book_id' => $bookA->id,
+            'user_id' => $user->id,
+            'rating' => 3,
+        ]);
+
+        $bookB = Book::factory()->create([
+            'title' => 'B_Book',
+            'created_at' => now()->subdays(2),
+        ]);
+        Review::factory()->create([
+            'book_id' => $bookB->id,
+            'user_id' => $user->id,
+            'rating' => 5,
+        ]);
+
+        $bookC = Book::factory()->create([
+            'title' => 'C_Book',
+            'created_at' => now()->subDays(1),
+        ]);
+        Review::factory()->create([
+            'book_id' => $bookC->id,
+            'user_id' => $user->id,
+            'rating' => 1,
+        ]);
+
+        $responseLatest = $this->actingAs($user)->get(route('books.index', ['sort' => 'latest']));
+        $responseLatest->assertStatus(200);
+        $responseLatest->assertSeeInOrder([
+            'C_Book',
+            'B_Book',
+            'A_Book',
+        ]);
+
+        $responseOldest = $this->actingAs($user)->get(route('books.index', ['sort' => 'oldest']));
+        $responseOldest->assertStatus(200);
+        $responseOldest->assertSeeInOrder([
+            'A_Book',
+            'B_Book',
+            'C_Book',
+        ]);
+
+        $responseTitle = $this->actingAs($user)->get(route('books.index', ['sort' => 'title']));
+        $responseTitle->assertStatus(200);
+        $responseTitle->assertSeeInOrder([
+            'A_Book',
+            'B_Book',
+            'C_Book',
+        ]);
+
+        $responseRating = $this->actingAs($user)->get(route('books.index', ['sort' => 'rating']));
+        $responseRating->assertStatus(200);
+        $responseRating->assertSeeInOrder([
+            'B_Book',
+            'A_Book',
+            'C_Book',
+        ]);
+    }
+
+    /** @test */
     public function 書籍詳細で基本情報とジャンルとレビュー一覧といいね数が表示される(): void
     {
         $user = User::factory()->create();

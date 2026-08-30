@@ -70,14 +70,14 @@ class BookController extends Controller
                     ->orderByRaw('reviews_avg_rating IS NULL ASC')
                     ->orderBy('reviews_avg_rating', 'desc');
                 break;
-            case 'newest':
+            case 'latest':
             default:
                 $query->orderBy('created_at', 'desc')
                     ->orderBy('id', 'desc');
                 break;
         }
 
-        $books = $query->paginate(20)->appends($request->query());
+        $books = $query->paginate(10)->appends($request->query());
 
         return view('books.index', compact('books', 'genres'));
     }
