@@ -74,4 +74,16 @@ class ReportControllerTest extends TestCase
         $response->assertSee(route('books.show', $book1->id));
         $response->assertSee(route('genres.show', $genreA->id));
     }
+
+    /** @test */
+    public function レビューが0件の時のメッセージが正しく表示される(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('reports.index'));
+
+        $response->assertStatus(200);
+        $response->assertSee('4星以上の書籍がありません');
+        $response->assertSee('ジャンルが設定された書籍のレビューがありません');
+    }
 }
