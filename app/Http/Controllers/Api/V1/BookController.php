@@ -110,7 +110,7 @@ class BookController extends Controller
             'image_url' => $validated['image_url'] ?? null,
         ]);
 
-        $book->genres()->aync($validated['genres']);
+        $book->genres()->sync($validated['genres']);
 
         $book->load(['genres', 'reviews.user']);
         $book->loadCount('reviews');
