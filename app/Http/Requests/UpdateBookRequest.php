@@ -35,7 +35,7 @@ class UpdateBookRequest extends FormRequest
             'isbn' => [
                 'nullable',
                 'string',
-                'max:13',
+                'size:13',
                 Rule::unique('books', 'isbn')->ignore($book),
             ],
             'genres' => 'required|array',
@@ -53,7 +53,7 @@ class UpdateBookRequest extends FormRequest
             'author.string' => '著者名は文字列で入力してください',
             'author.max' => '著者は255文字以内で入力してください',
             'isbn.string' => 'ISBNコードは文字列で入力してください',
-            'isbn.max' => 'ISBNコードは13桁で入力してください',
+            'isbn.size' => 'ISBNコードは13桁で入力してください',
             'isbn.unique' => 'このISBNコードは既に登録されています',
             'published_date.required' => '出版日を入力してください',
             'published_date.date' => '出版日は有効な日付形式で入力してください',
