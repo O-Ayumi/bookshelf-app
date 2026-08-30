@@ -28,7 +28,7 @@ class BookController extends Controller
      * 書籍一覧と検索機能
      *
      * @param  IndexBookRequest  $request  バリデーション済のリクエスト
-     * @return View 一覧画面と絞り込み表示、10件ごとのページネーション
+     * @return View 一覧画面と絞り込み表示、20件ごとのページネーション
      */
     public function index(IndexBookRequest $request): View
     {
@@ -77,7 +77,7 @@ class BookController extends Controller
                 break;
         }
 
-        $books = $query->paginate(10)->appends($request->query());
+        $books = $query->paginate(20)->appends($request->query());
 
         return view('books.index', compact('books', 'genres'));
     }

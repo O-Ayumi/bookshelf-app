@@ -30,7 +30,7 @@ class Handler extends ExceptionHandler
         $this->renderable(function (Throwable $e, $request) {
             if ($request->is('api/*') && ($e instanceof NotFoundHttpException || $e instanceof ModelNotFoundException)) {
                 return response()->json([
-                    'message' => '指定された書籍が見つかりません',
+                    'error' => '書籍が見つかりませんでした',
                 ], 404);
             }
         });
@@ -38,7 +38,7 @@ class Handler extends ExceptionHandler
         $this->renderable(function (AuthenticationException $e, $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => '認証済みユーザーのみ可能です',
+                    'error' => '認証済みユーザーのみ可能です',
                 ], 401);
             }
         });
@@ -46,7 +46,7 @@ class Handler extends ExceptionHandler
         $this->renderable(function (AuthorizationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json([
-                    'message' => 'この操作の権限がありません',
+                    'error' => 'この操作の権限がありません',
                 ], 403);
             }
         });

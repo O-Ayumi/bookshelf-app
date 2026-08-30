@@ -11,7 +11,6 @@ use App\Models\Book;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
@@ -23,7 +22,7 @@ class BookController extends Controller
      */
     public function index(IndexBookRequest $request): AnonymousResourceCollection
     {
-        $query = Book::with(['genres'])->withAvg('reviews as average_rating', 'rating')->withCount('reviews');
+        $query = Book::with(['genres'])->withAvg('reviews', 'rating')->withCount('reviews');
 
         if ($request->filled('keyword')) {
             $keyword = $request->keyword;
@@ -38,7 +37,8 @@ class BookController extends Controller
             });
         }
 
-        $books = $query->oldest()->paginate(10);
+        $perPage = $request->input('per_page', 20);
+        $books = $query->latest()->paginate($perPage);
 
         return BookResource::collection($books);
     }
@@ -52,22 +52,22 @@ class BookController extends Controller
     public function store(StoreBookRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $genreIds = $validated['genre_ids'] ?? [];
-        unset($validated['genre_ids']);
 
-        $book = DB::transaction(function () use ($validated, $genreIds, $request) {
-            $validated['user_id'] = $request->user()->id;
+        $book = Book::create([
+            'user_id' => auth()->id(),
+            'title' => $validated['title'],
+            'author' => $validated['author'],
+            'isbn' => $validated['isbn'],
+            'published_date' => $validated['published_date'],
+            'description' => $validated['description'] ?? null,
+            'image_url' => $validated['image_url'] ?? null,
+        ]);
 
-            $book = Book::create($validated);
+        $book->genres()->sync($validated['genres']);
 
-            if (! empty($genreIds)) {
-                $book->genres()->syncWithoutDetaching($genreIds);
-            }
-
-            return $book;
-        });
-
-        $book->load(['genres', 'user']);
+        $book->load(['genres', 'reviews.user']);
+        $book->loadCount('reviews');
+        $book->loadAvg('reviews', 'rating');
 
         return (new BookResource($book))->response()->setStatusCode(201);
     }
@@ -80,7 +80,9 @@ class BookController extends Controller
      */
     public function show(Book $book): BookResource
     {
-        $book->load(['genres', 'reviews']);
+        $book->load(['genres', 'reviews.user']);
+        $book->loadCount('reviews');
+        $book->loadAvg('reviews', 'rating');
 
         return new BookResource($book);
     }
@@ -97,15 +99,22 @@ class BookController extends Controller
         $this->authorize('update', $book);
 
         $validated = $request->validated();
-        $genreIds = $validated['genre_ids'] ?? [];
-        unset($validated['genre_ids']);
 
-        DB::transaction(function () use ($book, $validated, $genreIds) {
-            $book->update($validated);
-            $book->genres()->sync($genreIds);
-        });
+        $book->update([
+            'user_id' => $validated['user_id'],
+            'title' => $validated['title'],
+            'author' => $validated['author'],
+            'isbn' => $validated['isbn'],
+            'published_date' => $validated['published_date'],
+            'description' => $validated['description'] ?? null,
+            'image_url' => $validated['image_url'] ?? null,
+        ]);
 
-        $book->load(['genres', 'user']);
+        $book->genres()->aync($validated['genres']);
+
+        $book->load(['genres', 'reviews.user']);
+        $book->loadCount('reviews');
+        $book->loadAvg('reviews', 'rating');
 
         return new BookResource($book);
     }
