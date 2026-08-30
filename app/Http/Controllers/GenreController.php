@@ -101,7 +101,7 @@ class GenreController extends Controller
     {
         try {
             if ($genre->books()->exists()) {
-                return back()->with('error', '書籍が紐づいているジャンルは削除できません');
+                return back()->with('error', 'このジャンルには書籍が紐付いているため削除できません');
             }
 
             $genre->delete();
