@@ -159,9 +159,8 @@ class BookController extends Controller
      */
     public function update(UpdateBookRequest $request, Book $book): RedirectResponse
     {
+        $this->authorize('update', $book);
         try {
-            $this->authorize('update', $book);
-
             DB::transaction(function () use ($request, $book) {
                 $book->update($request->only(['title', 'author']));
                 $book->genres()->sync($request->input('genres'));
