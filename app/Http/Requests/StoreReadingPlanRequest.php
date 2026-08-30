@@ -2,7 +2,6 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\ReadingPlanStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\facades\Auth;
 use Illuminate\Validation\Rule;
@@ -29,12 +28,15 @@ class StoreReadingPlanRequest extends FormRequest
         return [
             'book_id' => [
                 'required',
+                'integer',
                 'exists:books,id',
                 Rule::unique('reading_plans', 'book_id')
-                    ->where('user_id', Auth::id())
-                    ->where('status', ReadingPlanStatus::Reading->value),
+                    ->where(function ($query) {
+                        return $query->where('user_id', Auth::id())
+                            ->where('status', 'in_progress');
+                    }),
             ],
-            'target_date' => ['required', 'date'],
+            'target_date' => ['required', 'date', 'after_or_equal:today'],
         ];
     }
 
@@ -42,8 +44,10 @@ class StoreReadingPlanRequest extends FormRequest
     {
         return [
             'book_id.required' => '書籍を選択してください',
-            'book_id.unique' => 'すでにこの書籍の読書計画が進行中です',
+            'book_id.unique' => 'この書籍は既に進行中の読書計画が存在します',
             'target_date.required' => '期日を設定してください',
+            'target_date.date' => '期日は有効な日付形式で入力してください',
+            'target_date.after_or_equal' => '期日は今日以降の日付を指定してください',
         ];
     }
 }
