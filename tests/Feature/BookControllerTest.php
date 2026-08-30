@@ -144,6 +144,18 @@ class BookControllerTest extends TestCase
     }
 
     /** @test */
+    public function 書籍一覧・詳細はログインなしで閲覧できる(): void
+    {
+        $response = $this->get(route('books.index'));
+        $response->assertStatus(200);
+
+        $book = Book::factory()->create();
+
+        $response = $this->get(route('books.show', $book));
+        $response->assertStatus(200);
+    }
+
+    /** @test */
     public function 認証時に書籍登録画面へ遷移され、全ジャンルのチェックボックスが複数選択可能な形で存在する(): void
     {
         $user = User::factory()->create();
@@ -342,14 +354,62 @@ class BookControllerTest extends TestCase
     }
 
     /** @test */
-    public function 書籍一覧・詳細はログインなしで閲覧できる(): void
+    public function isb_n検索で不正な形式の時未検出として404が返される(): void
     {
-        $response = $this->get(route('books.index'));
-        $response->assertStatus(200);
+        $user = User::factory()->create();
+        $isbn = '12345';
 
-        $book = Book::factory()->create();
+        Http::fake([
+            '*googleapis.com*' => Http::response([
+                'totalItems' => 0,
+                'items' => [],
+            ], 200),
+        ]);
 
-        $response = $this->get(route('books.show', $book));
-        $response->assertStatus(200);
+        $response = $this->actingAs($user)->get(route('books.fetch_isbn', ['isbn' => $isbn]));
+
+        $response->assertStatus(404);
+        $response->assertJson([
+            'error' => '書籍情報が見つかりませんでした',
+        ]);
+    }
+
+    /** @test */
+    public function isb_n検索で該当する本が存在しない場合404が返される(): void
+    {
+        $user = User::factory()->create();
+        $isbn = '9782514526985';
+
+        Http::fake([
+            '*googleapis.com*' => Http::response([
+                'totalItems' => 0,
+                'items' => [],
+            ], 200),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('books.fetch_isbn', ['isbn' => $isbn]));
+
+        $response->assertStatus(404);
+        $response->assertJson([
+            'error' => '書籍情報が見つかりませんでした',
+        ]);
+    }
+
+    /** @test */
+    public function isb_n検索の通信エラー時は500エラーが返される(): void
+    {
+        $user = User::factory()->create();
+        $isbn = '9782514526985';
+
+        Http::fake([
+            '*googleapis.com*' => Http::response([], 500),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('books.fetch_isbn', ['isbn' => $isbn]));
+
+        $response->assertStatus(500);
+        $response->assertJson([
+            'error' => 'API通信に失敗しました',
+        ]);
     }
 }
