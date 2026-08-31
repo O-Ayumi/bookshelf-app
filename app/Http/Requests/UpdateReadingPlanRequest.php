@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\ReadingPlanStatus;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -25,10 +26,10 @@ class UpdateReadingPlanRequest extends FormRequest
      */
     public function rules(): array
     {
-        $currentPlan = $this->route('reading-plan');
+        $currentPlan = $this->route('reading_plan');
         $currentPlanId = is_object($currentPlan) ? $currentPlan->id : $currentPlan;
 
-        $bookId = $this->input('book_id') ?? ($is_object($currentPlan) ? $currentPlan->book_id : null);
+        $bookId = $this->input('book_id') ?? (is_object($currentPlan) ? $currentPlan->book_id : null);
 
         return [
             'target_date' => [
@@ -39,9 +40,10 @@ class UpdateReadingPlanRequest extends FormRequest
             'book_id' => [
                 'nullable',
                 Rule::unique('reading_plans', 'book_id')
-                    ->where(function ($query) {
+                    ->where(function ($query) use ($bookId) {
                         return $query->where('user_id', Auth::id())
-                            ->where('status', 'in_progress');
+                            ->where('book_id', $bookId)
+                            ->where('status', ReadingPlanStatus::Reading->value);
                     })
                     ->ignore($currentPlanId),
             ],

@@ -13,13 +13,16 @@ class WebNotification extends Notification
 
     protected $timing;
 
+    protected $readingPlanId;
+
     /**
      * Create a new notification instance.
      */
-    public function __construct($title, $timing = null)
+    public function __construct($title, $timing = null, $readingPlanId = null)
     {
         $this->title = $title;
         $this->timing = $timing;
+        $this->readingPlanId = $readingPlanId;
     }
 
     /**
@@ -42,6 +45,7 @@ class WebNotification extends Notification
         return [
             'title' => $this->title,
             'timing' => $this->timing,
+            'reading_plan_id' => $this->readingPlanId,
         ];
     }
 }

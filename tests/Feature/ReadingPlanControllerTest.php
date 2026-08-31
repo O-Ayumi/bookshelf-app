@@ -208,7 +208,11 @@ class ReadingPlanControllerTest extends TestCase
     public function 計画更新で認証かつ認可済ユーザーがバリデーション通過したとき情報が更新される(): void
     {
         $user = User::factory()->create();
-        $plan = ReadingPlan::factory()->create(['user_id' => $user->id]);
+        $plan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'in_progress',
+        ]);
+
         $targetDate = now()->addDays(7)->format('Y-m-d');
 
         $response = $this->actingAs($user)->put(

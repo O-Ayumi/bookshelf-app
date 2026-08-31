@@ -12,6 +12,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ReadingPlanController extends Controller
@@ -89,13 +90,19 @@ class ReadingPlanController extends Controller
     {
         $this->authorize('update', $readingPlan);
 
+        if ($readingPlan->status === ReadingPlanStatus::Completed->value) {
+            throw ValidationException::withMessages([
+                'status' => '完了済の読書計画は変更できません',
+            ]);
+        }
+
         $validated = $request->validated();
         $user = Auth::user();
 
         $newTargetDate = Carbon::parse($request->input('target_date'));
         $today = Carbon::today();
 
-        if ($readingPlan->status !== ReadingPlanStatus::Completed->value && $newTargetDate->greaterThanOrEqualTo($today)) {
+        if ($newTargetDate->greaterThanOrEqualTo($today)) {
             $exists = $user->readingPlans()
                 ->where('book_id', $readingPlan->book_id)
                 ->where('id', '!=', $readingPlan->id)
@@ -113,7 +120,7 @@ class ReadingPlanController extends Controller
             'target_date' => $validated['target_date'],
         ];
 
-        if ($readingPlan->status !== ReadingPlanStatus::Completed->value && $newTargetDate->greaterThanOrEqualTo($today)) {
+        if ($newTargetDate->greaterThanOrEqualTo($today)) {
             $updateData['status'] = ReadingPlanStatus::Reading->value;
         }
 
@@ -132,7 +139,12 @@ class ReadingPlanController extends Controller
     {
         $this->authorize('delete', $readingPlan);
 
-        $readingPlan->delete();
+        DB::transaction(function () use ($readingPlan) {
+            $readingPlan->user->notifications()
+                ->where('data->reading_plan_id', $readingPlan->id)
+                ->delete();
+            $readingPlan->delete();
+        });
 
         return redirect()->route('reading-plans.index')->with('success', '読書計画を削除しました');
     }
