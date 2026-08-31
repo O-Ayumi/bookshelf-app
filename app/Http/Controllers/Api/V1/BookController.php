@@ -38,6 +38,10 @@ class BookController extends Controller
         }
 
         $perPage = $request->input('per_page', 20);
+        if ($perPage > 100) {
+            $perPage = 100;
+        }
+
         $books = $query->latest()->paginate($perPage);
 
         return BookResource::collection($books);

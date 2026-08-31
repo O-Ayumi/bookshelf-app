@@ -143,7 +143,7 @@ class ApiBookTest extends TestCase
 
         $response->assertStatus(404);
         $response->assertJson([
-            'error' => '書籍が見つかりませんでした',
+            'error' => '書籍が見つかりませんでした。',
         ]);
     }
 
@@ -252,7 +252,7 @@ class ApiBookTest extends TestCase
 
         $response->assertStatus(404);
         $response->assertJson([
-            'error' => '書籍が見つかりませんでした',
+            'error' => '書籍が見つかりませんでした。',
         ]);
     }
 
