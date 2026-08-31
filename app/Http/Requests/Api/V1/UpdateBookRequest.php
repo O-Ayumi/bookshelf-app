@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api\V1;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateBookRequest extends FormRequest
 {
@@ -13,7 +14,7 @@ class UpdateBookRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user() !== null;
+        return true;
     }
 
     /**
@@ -25,10 +26,17 @@ class UpdateBookRequest extends FormRequest
     {
         $rules = (new StoreBookRequest)->rules();
 
-        $bookParam = $this->route('book');
+        $bookParam = $this->route('book') ?? $this->route('books');
         $bookId = is_object($bookParam) ? $bookParam->id : $bookParam;
 
-        $rules['isbn'] = ['required', 'string', 'max:13', "unique:books,isbn,{$bookId}"];
+        if ($bookId) {
+            $rules['isbn'] = [
+                'required',
+                'string',
+                'size:13',
+                Rule::unique('books', 'isbn')->ignore($bookId),
+            ];
+        }
 
         return $rules;
     }

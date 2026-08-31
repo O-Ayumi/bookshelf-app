@@ -91,17 +91,19 @@ class BookController extends Controller
      * 書籍情報の更新
      *
      * @param  UpdateBookRequest  $request  バリデーション済のリクエスト
-     * @param  Book  $book  特定の書籍
+     * @param  $id  特定の書籍
      * @return BookResource　更新後の書籍詳細
      */
-    public function update(UpdateBookRequest $request, Book $book): BookResource
+    public function update(UpdateBookRequest $request, $id): BookResource
     {
+        $book = Book::findOrFail($id);
+
         $this->authorize('update', $book);
 
         $validated = $request->validated();
 
         $book->update([
-            'user_id' => $validated['user_id'],
+            'user_id' => $book->user_id,
             'title' => $validated['title'],
             'author' => $validated['author'],
             'isbn' => $validated['isbn'],
@@ -110,7 +112,7 @@ class BookController extends Controller
             'image_url' => $validated['image_url'] ?? null,
         ]);
 
-        $book->genres()->sync($validated['genres']);
+        $book->genres()->sync($validated['genres'] ?? []);
 
         $book->load(['genres', 'reviews.user']);
         $book->loadCount('reviews');

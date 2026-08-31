@@ -38,15 +38,15 @@ class BookController extends Controller
 
         $query = Book::query();
 
-        if (! empty($validated['keyword'])) {
+        if (!empty($validated['keyword'])) {
             $keyword = $validated['keyword'];
             $query->where(function ($q) use ($keyword) {
-                $q->where('title', 'like', '%'.$keyword.'%')
-                    ->orWhere('author', 'like', '%'.$keyword.'%');
+                $q->where('title', 'like', '%' . $keyword . '%')
+                    ->orWhere('author', 'like', '%' . $keyword . '%');
             });
         }
 
-        if (! empty($validated['genre'])) {
+        if (!empty($validated['genre'])) {
             $genreId = $validated['genre'];
             $query->whereHas('genres', function ($q) use ($genreId) {
                 $q->where('book_genre.genre_id', $genreId);
@@ -117,7 +117,7 @@ class BookController extends Controller
             return redirect()->route('books.show', ['book' => $book->id])->with('success', '書籍を登録しました');
 
         } catch (Exception $e) {
-            Log::error('書籍登録失敗:'.$e->getMessage());
+            Log::error('書籍登録失敗:' . $e->getMessage());
 
             return back()->withInput()->with('error', '登録に失敗しました');
         }
@@ -160,6 +160,7 @@ class BookController extends Controller
     public function update(UpdateBookRequest $request, Book $book): RedirectResponse
     {
         $this->authorize('update', $book);
+
         try {
             DB::transaction(function () use ($request, $book) {
                 $book->update($request->only(['title', 'author']));
@@ -168,7 +169,7 @@ class BookController extends Controller
 
             return redirect()->route('books.show', $book)->with('success', '書籍を更新しました');
         } catch (Exception $e) {
-            Log::error('書籍更新失敗:'.$e->getMessage());
+            Log::error('書籍更新失敗:' . $e->getMessage());
 
             return back()->withInput()->with('error', '更新に失敗しました');
         }
@@ -191,7 +192,7 @@ class BookController extends Controller
 
             return redirect()->route('books.index')->with('success', '書籍を削除しました');
         } catch (Exception $e) {
-            Log::error('書籍削除失敗:'.$e->getMessage());
+            Log::error('書籍削除失敗:' . $e->getMessage());
 
             return back()->with('error', '削除に失敗しました');
         }
@@ -210,12 +211,12 @@ class BookController extends Controller
         try {
             $response = Http::timeout(5)
                 ->get('https://www.googleapis.com/books/v1/volumes', [
-                    'q' => 'isbn:'.$cleanIsbn,
+                    'q' => 'isbn:' . $cleanIsbn,
                     'key' => config('services.google.books_api_key'),
                 ]);
 
             if ($response->failed()) {
-                Log::error('ISBN検索API通信エラー：'.$response->status());
+                Log::error('ISBN検索API通信エラー：' . $response->status());
 
                 return response()->json(['error' => 'API通信に失敗しました'], 500);
             }
@@ -223,7 +224,7 @@ class BookController extends Controller
             $data = $response->json();
 
             if (isset($data['error'])) {
-                Log::error('Google Books API内部エラー：'.json_encode($data['error']));
+                Log::error('Google Books API内部エラー：' . json_encode($data['error']));
 
                 return response()->json(['error' => 'API内部でエラーが発生しました'], 500);
             }
@@ -253,7 +254,7 @@ class BookController extends Controller
             ]);
 
         } catch (Exception $e) {
-            Log::error('ISBN検索中に例外が発生しました:'.$e->getMessage());
+            Log::error('ISBN検索中に例外が発生しました:' . $e->getMessage());
 
             return response()->json(['error' => 'サーバーエラーが発生しました'], 500);
         }

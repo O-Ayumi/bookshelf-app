@@ -13,18 +13,18 @@ class ApiBookTest extends TestCase
     use RefreshDatabase;
 
     /** @test */
-    public function jso_n形式で10件ごとの書籍一覧が返される(): void
+    public function jso_n形式で20件ごとの書籍一覧が返される(): void
     {
         $user = User::factory()->create();
         $genre = Genre::factory()->create();
-        Book::factory()->count(11)->hasAttached($genre)->create([
+        Book::factory()->count(21)->hasAttached($genre)->create([
             'user_id' => $user->id,
         ]);
 
         $response = $this->getJson('/api/v1/books');
 
         $response->assertStatus(200);
-        $response->assertJsonCount(10, 'data');
+        $response->assertJsonCount(20, 'data');
     }
 
     /** @test */
@@ -101,7 +101,7 @@ class ApiBookTest extends TestCase
                 '*' => [
                     'genres',
                     'average_rating',
-                    'reviews_count',
+                    'review_count',
                 ],
             ],
         ]);
@@ -143,7 +143,7 @@ class ApiBookTest extends TestCase
 
         $response->assertStatus(404);
         $response->assertJson([
-            'message' => '指定された書籍が見つかりません',
+            'error' => '書籍が見つかりませんでした',
         ]);
     }
 
@@ -159,7 +159,7 @@ class ApiBookTest extends TestCase
             'published_date' => '2026-08-05',
             'description' => '',
             'image_url' => '',
-            'genre_ids' => [$genre->id],
+            'genres' => [$genre->id],
         ];
 
         // ログイン用のSanctum認証は書かずテスト内でのみトークンを発行
@@ -191,7 +191,7 @@ class ApiBookTest extends TestCase
             'published_date' => '',
             'description' => '',
             'image_url' => '',
-            'genre_ids' => '',
+            'genres' => '',
         ];
 
         $response = $this->actingAs($user)->postJson('api/v1/books', $data);
@@ -202,7 +202,7 @@ class ApiBookTest extends TestCase
             'author',
             'isbn',
             'published_date',
-            'genre_ids',
+            'genres',
         ]);
     }
 
@@ -220,15 +220,10 @@ class ApiBookTest extends TestCase
             'author' => '更新後',
             'isbn' => '2222222222222',
             'published_date' => '2026-08-05',
-            'description' => '',
-            'image_url' => '',
-            'genre_ids' => [$genre->id],
+            'genres' => [$genre->id],
         ];
 
-        // ログイン用のSanctum認証は書かずテスト内でのみトークンを発行
-        $token = $user->createToken('test-token')->plainTextToken;
-
-        $response = $this->withToken($token)->putJson("api/v1/books/{$book->id}", $data);
+        $response = $this->actingAs($user, 'sanctum')->putJson("api/v1/books/{$book->id}", $data);
 
         $response->assertStatus(200);
         $response->assertJsonPath('data.title', '更新');
@@ -244,21 +239,20 @@ class ApiBookTest extends TestCase
     {
         $user = User::factory()->create();
         $genre = Genre::factory()->create();
-        $book = Book::factory()->hasAttached($genre)->create([
-            'user_id' => $user->id,
-        ]);
-        $nonExistenId = $book->id + 99999;
 
-        $response = $this->actingAs($user)->putJson("api/v1/books/{$nonExistenId}", [
-            'title' => '存在しない本への更新テスト',
-            'author' => 'テスト著者',
-            'isbn' => '9784048930545',
-            'genre_ids' => [$genre->id],
-        ]);
+        $data = [
+            'title' => '更新',
+            'author' => '更新後',
+            'isbn' => '2222222222222',
+            'published_date' => '2026-08-05',
+            'genres' => [$genre->id],
+        ];
+
+        $response = $this->actingAs($user, 'sanctum')->putJson('api/v1/books/99999', $data);
 
         $response->assertStatus(404);
         $response->assertJson([
-            'message' => '指定された書籍が見つかりません',
+            'error' => '書籍が見つかりませんでした',
         ]);
     }
 
@@ -338,9 +332,9 @@ class ApiBookTest extends TestCase
         $putResponse = $this->actingAs($otherUser)->putJson("/api/v1/books/{$book->id}", [
             'title' => '更新の認可エラー',
             'author' => $book->author,
-            'isbn' => $book->isbn,
-            'published_date' => $book->published_date ? $book->published_date->format('Y-m-d') : '2026-01-01',
-            'genre_ids' => [$genre->id],
+            'isbn' => '9999999999999',
+            'published_date' => '2026-01-01',
+            'genres' => [$genre->id],
         ]);
         $putResponse->assertStatus(403);
 
