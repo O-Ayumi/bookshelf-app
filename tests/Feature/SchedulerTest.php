@@ -38,6 +38,12 @@ class SchedulerTest extends TestCase
             'status' => ReadingPlanStatus::Reading->value,
         ]);
 
+        $threeDaysAfterExpiredPlan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'target_date' => $today->copy()->subDays(3)->format('Y-m-d 00:00:00'),
+            'status' => ReadingPlanStatus::Expired->value,
+        ]);
+
         $pastPlan = ReadingPlan::factory()->create([
             'user_id' => $user->id,
             'target_date' => $today->copy()->subDay()->format('Y-m-d 00:00:00'),
@@ -51,7 +57,7 @@ class SchedulerTest extends TestCase
             'status' => ReadingPlanStatus::Expired->value,
         ]);
 
-        $this->assertEquals(3, $user->unreadNotifications()->count());
+        $this->assertEquals(4, $user->unreadNotifications()->count());
 
         $this->assertDatabaseHas('notifications', [
             'notifiable_id' => $user->id,

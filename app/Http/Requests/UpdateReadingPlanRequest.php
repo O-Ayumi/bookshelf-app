@@ -3,9 +3,11 @@
 namespace App\Http\Requests;
 
 use App\Enums\ReadingPlanStatus;
+use App\Models\ReadingPlan;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class UpdateReadingPlanRequest extends FormRequest
 {
@@ -27,9 +29,18 @@ class UpdateReadingPlanRequest extends FormRequest
     public function rules(): array
     {
         $currentPlan = $this->route('reading_plan');
-        $currentPlanId = is_object($currentPlan) ? $currentPlan->id : $currentPlan;
 
-        $bookId = $this->input('book_id') ?? (is_object($currentPlan) ? $currentPlan->book_id : null);
+        $planModel = is_object($currentPlan) ? $currentPlan : ReadingPlan::find($currentPlan);
+
+        if ($planModel && $planModel->status === ReadingPlanStatus::Completed->value) {
+            throw ValidationException::withMessages([
+                'status' => '完了済の読書計画は変更できません',
+            ]);
+        }
+
+        $currentPlanId = $planModel ? $planModel->id : null;
+
+        $bookId = $this->input('book_id') ?? ($planModel ? $planModel->book_id : null);
 
         return [
             'target_date' => [
