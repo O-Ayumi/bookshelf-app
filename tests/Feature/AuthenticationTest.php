@@ -74,6 +74,39 @@ class AuthenticationTest extends TestCase
     }
 
     /** @test */
+    public function 認証済みユーザーが新規登録画面にアクセスした場合はバリデーションエラーになる(): void
+    {
+        $user = User::factory()->create([
+            'email' => 'test@example.com',
+        ]);
+
+        $data = [
+            'name' => 'newname',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ];
+
+        $response = $this->from('/register')->post('/register', $data);
+
+        $response->assertRedirect('/register');
+        $response->assertSessionHasErrors([
+            'email',
+        ]);
+        $this->assertDatabaseCount('users', 1);
+    }
+
+    /** @test */
+    public function 認証済みユーザーがログイン画面にアクセスした場合は書籍一覧にリダイレクトされる(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->get(route('login'));
+
+        $response->assertRedirect(route('books.index'));
+    }
+
+    /** @test */
     public function ログアウト時はセッションが破棄されログイン画面にリダイレクトされる(): void
     {
         $user = User::factory()->create();

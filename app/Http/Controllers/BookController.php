@@ -28,7 +28,7 @@ class BookController extends Controller
      * 書籍一覧と検索機能
      *
      * @param  IndexBookRequest  $request  バリデーション済のリクエスト
-     * @return View 一覧画面と絞り込み表示、10件ごとのページネーション
+     * @return View 一覧画面と絞り込み表示、20件ごとのページネーション
      */
     public function index(IndexBookRequest $request): View
     {
@@ -37,6 +37,8 @@ class BookController extends Controller
         $validated = $request->validated();
 
         $query = Book::query();
+
+        $query->with(['genres', 'reviews']);
 
         if (! empty($validated['keyword'])) {
             $keyword = $validated['keyword'];
@@ -70,7 +72,7 @@ class BookController extends Controller
                     ->orderByRaw('reviews_avg_rating IS NULL ASC')
                     ->orderBy('reviews_avg_rating', 'desc');
                 break;
-            case 'newest':
+            case 'latest':
             default:
                 $query->orderBy('created_at', 'desc')
                     ->orderBy('id', 'desc');
@@ -159,9 +161,9 @@ class BookController extends Controller
      */
     public function update(UpdateBookRequest $request, Book $book): RedirectResponse
     {
-        try {
-            $this->authorize('update', $book);
+        $this->authorize('update', $book);
 
+        try {
             DB::transaction(function () use ($request, $book) {
                 $book->update($request->only(['title', 'author']));
                 $book->genres()->sync($request->input('genres'));

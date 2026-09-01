@@ -25,7 +25,7 @@ class UpdateReviewRequest extends FormRequest
     {
         return [
             'rating' => 'required|integer|between:1,5',
-            'comment' => 'nullable|string|max:1000',
+            'comment' => 'required|string|max:1000',
         ];
     }
 
@@ -33,7 +33,8 @@ class UpdateReviewRequest extends FormRequest
     {
         return [
             'rating.required' => '評価を選択してください',
-            'comment.max' => 'レビューは1000文字以内で入力してください',
+            'comment.required' => 'コメントを入力してください',
+            'comment.max' => 'コメントは1000文字以内で入力してください',
         ];
     }
 }

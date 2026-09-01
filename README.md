@@ -87,7 +87,7 @@ erDiagram
 
     reviews {
         bigint_unsigned id PK
-        bigint_unsigned user_id FK "UNIQUE(user_id, book_id)"
+        bigint_unsigned user_id FK
         bigint_unsigned book_id FK
         tinyInteger rating
         text comment

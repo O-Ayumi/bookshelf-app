@@ -39,7 +39,11 @@ class SendTimingNotifications extends Command
 
         foreach ($threeDaysBeforePlans as $plan) {
             $bookTitle = $plan->book->title ?? '登録書籍';
-            $plan->user->notify(new WebNotification("「{$bookTitle}」の読書計画の目標日まであと3日です", 'three_days_before'));
+            $plan->user->notify(new WebNotification(
+                "「{$bookTitle}」の読書計画の目標日まであと3日です",
+                'three_days_before',
+                $plan->id
+            ));
         }
 
         // 当日通知
@@ -49,19 +53,28 @@ class SendTimingNotifications extends Command
 
         foreach ($onDueDatePlans as $plan) {
             $bookTitle = $plan->book->title ?? '登録書籍';
-            $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日になりました", 'on_due_date'));
+            $plan->user->notify(new WebNotification(
+                "「{$bookTitle}」の読了目標日になりました",
+                'on_due_date',
+                $plan->id
+            ));
         }
 
         // 三日後通知(期日から三日以上経過かつまだ読了していないデータに通知)
         $threeDaysAfterPlans = ReadingPlan::whereDate('target_date', '=', $today->copy()->subDays(3))
             ->whereIn('status', [
                 ReadingPlanStatus::Reading->value,
+                ReadingPlanStatus::Expired->value,
             ])
             ->get();
 
         foreach ($threeDaysAfterPlans as $plan) {
             $bookTitle = $plan->book->title ?? '登録書籍';
-            $plan->user->notify(new WebNotification("「{$bookTitle}」の読了目標日から3日が経過しています", 'expired'));
+            $plan->user->notify(new WebNotification(
+                "「{$bookTitle}」の読了目標日から3日が経過しています",
+                'expired',
+                $plan->id
+            ));
         }
 
         ReadingPlan::where('target_date', '<', $today->toDateString())

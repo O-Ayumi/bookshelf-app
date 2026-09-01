@@ -11,8 +11,8 @@ enum ReadingPlanStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Reading => '読書中',
-            self::Completed => '読了',
+            self::Reading => '進行中',
+            self::Completed => '完了',
             self::Expired => '期限切れ',
         };
     }

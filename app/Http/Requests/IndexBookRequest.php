@@ -27,7 +27,7 @@ class IndexBookRequest extends FormRequest
         return [
             'keyword' => ['nullable', 'string', 'max:255'],
             'genre' => ['nullable', 'integer', 'exists:genres,id'],
-            'sort' => ['nullable', 'string', Rule::in(['newest', 'oldest', 'title', 'rating'])],
+            'sort' => ['nullable', 'string', Rule::in(['latest', 'oldest', 'title', 'rating'])],
             'page' => ['nullable', 'integer', 'min:1'],
         ];
     }

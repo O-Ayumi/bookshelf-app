@@ -11,7 +11,9 @@ use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ReadingPlanController extends Controller
@@ -69,25 +71,35 @@ class ReadingPlanController extends Controller
     /**
      * 読書計画編集画面表示
      *
-     * @param  ReadingPlan  $readingPlan  特定の計画
+     * @param  ReadingPlan  $reading_plan  特定の計画
      */
-    public function edit(ReadingPlan $readingPlan): View
+    public function edit(ReadingPlan $reading_plan): View
     {
-        $this->authorize('update', $readingPlan);
+        $this->authorize('update', $reading_plan);
 
-        return view('reading-plans.edit', compact('readingPlan'));
+        if ($reading_plan->status->value === 'completed') {
+            abort(403, '完了済の読書計画は変更できません');
+        }
+
+        return view('reading-plans.edit', ['readingPlan' => $reading_plan]);
     }
 
     /**
      * 読書計画編集
      *
      * @param  UpdateReadingPlanRequest  $request  バリデーション済のリクエスト
-     * @param  ReadingPlan  $readingPlan  特定の計画
+     * @param  ReadingPlan  $reading_plan  特定の計画
      * @return RedirectResponse　読書計画一覧へ遷移
      */
-    public function update(UpdateReadingPlanRequest $request, ReadingPlan $readingPlan): RedirectResponse
+    public function update(UpdateReadingPlanRequest $request, ReadingPlan $reading_plan): RedirectResponse
     {
-        $this->authorize('update', $readingPlan);
+        $this->authorize('update', $reading_plan);
+
+        if ($reading_plan->status->value === 'completed') {
+            throw ValidationException::withMessages([
+                'status' => '完了済の読書計画は変更できません',
+            ]);
+        }
 
         $validated = $request->validated();
         $user = Auth::user();
@@ -95,10 +107,10 @@ class ReadingPlanController extends Controller
         $newTargetDate = Carbon::parse($request->input('target_date'));
         $today = Carbon::today();
 
-        if ($readingPlan->status !== ReadingPlanStatus::Completed->value && $newTargetDate->greaterThanOrEqualTo($today)) {
+        if ($reading_plan->status->value !== 'completed' && $newTargetDate->greaterThanOrEqualTo($today)) {
             $exists = $user->readingPlans()
-                ->where('book_id', $readingPlan->book_id)
-                ->where('id', '!=', $readingPlan->id)
+                ->where('book_id', $reading_plan->book_id)
+                ->where('id', '!=', $reading_plan->id)
                 ->whereIn('status', [ReadingPlanStatus::Reading])
                 ->exists();
 
@@ -113,11 +125,11 @@ class ReadingPlanController extends Controller
             'target_date' => $validated['target_date'],
         ];
 
-        if ($readingPlan->status !== ReadingPlanStatus::Completed->value && $newTargetDate->greaterThanOrEqualTo($today)) {
-            $updateData['status'] = ReadingPlanStatus::Reading->value;
+        if ($reading_plan->status->value !== 'completed' && $newTargetDate->greaterThanOrEqualTo($today)) {
+            $updateData['status'] = 'in_progress';
         }
 
-        $readingPlan->update($updateData);
+        $reading_plan->update($updateData);
 
         return redirect()->route('reading-plans.index')->with('success', '読書計画を更新しました');
     }
@@ -125,14 +137,30 @@ class ReadingPlanController extends Controller
     /**
      * 読書計画の削除
      *
-     * @param  ReadingPlan  $readingPlan  特定の計画
+     * @param  ReadingPlan  $reading-plan  特定の計画
      * @return RedirectResponse　読書計画一覧へ遷移
      */
-    public function destroy(ReadingPlan $readingPlan): RedirectResponse
+    public function destroy(ReadingPlan $reading_plan): RedirectResponse
     {
-        $this->authorize('delete', $readingPlan);
+        $this->authorize('delete', $reading_plan);
 
-        $readingPlan->delete();
+        DB::transaction(function () use ($reading_plan) {
+            DatabaseNotification::where('notifiable_id', $reading_plan->user_id)
+                ->where('notifiable_type', get_class($reading_plan->user))
+                ->get()
+                ->filter(function ($notification) use ($reading_plan) {
+                    $dataString = is_array($notification->data) || is_object($notification->data) ? json_encode($notification->data) : (string) $notification->data;
+
+                    $pattern = '/"reading_plan_id"\s*:\s*"?'.preg_quote($reading_plan->id, '/').'"?/';
+
+                    return (bool) preg_match($pattern, $dataString);
+                })
+                ->each(function ($notification) {
+                    $notification->delete();
+                });
+
+            $reading_plan->delete();
+        });
 
         return redirect()->route('reading-plans.index')->with('success', '読書計画を削除しました');
     }
@@ -140,14 +168,14 @@ class ReadingPlanController extends Controller
     /**
      * 読了時の処理
      *
-     * @param  ReadingPlan  $readingPlan  特定の計画
+     * @param  ReadingPlan  $reading_plan  特定の計画
      * @return RedirectResponse　読書計画一覧へ遷移
      */
-    public function complete(ReadingPlan $readingPlan): RedirectResponse
+    public function complete(ReadingPlan $reading_plan): RedirectResponse
     {
-        $this->authorize('update', $readingPlan);
+        $this->authorize('update', $reading_plan);
 
-        $readingPlan->update([
+        $reading_plan->update([
             'status' => ReadingPlanStatus::Completed,
             'completed_at' => now(),
         ]);

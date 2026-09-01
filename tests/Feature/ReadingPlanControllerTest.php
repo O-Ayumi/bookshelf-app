@@ -6,6 +6,7 @@ use App\Enums\ReadingPlanStatus;
 use App\Models\Book;
 use App\Models\ReadingPlan;
 use App\Models\User;
+use App\Notifications\WebNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -208,11 +209,15 @@ class ReadingPlanControllerTest extends TestCase
     public function 計画更新で認証かつ認可済ユーザーがバリデーション通過したとき情報が更新される(): void
     {
         $user = User::factory()->create();
-        $plan = ReadingPlan::factory()->create(['user_id' => $user->id]);
+        $plan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'in_progress',
+        ]);
+
         $targetDate = now()->addDays(7)->format('Y-m-d');
 
         $response = $this->actingAs($user)->put(
-            route('reading-plans.update', ['reading_plan' => $plan->id]),
+            route('reading-plans.update', $plan->id),
             [
                 'book_id' => $plan->book_id,
                 'target_date' => $targetDate,
@@ -273,5 +278,91 @@ class ReadingPlanControllerTest extends TestCase
             'id' => $plan->id,
             'target_date' => $originalDate,
         ]);
+    }
+
+    /** @test */
+    public function 期限切れの計画に未来の期日を設定すると進行中に戻り一覧にリダイレクトされる(): void
+    {
+        $user = User::factory()->create();
+
+        $plan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => 'expired',
+            'target_date' => now()->subDays(1)->format('Y-m-d'),
+        ]);
+
+        $newTargetDate = now()->addDays(7)->format('Y-m-d');
+
+        $response = $this->actingAs($user)->put(route('reading-plans.update', $plan), [
+            'book_id' => $plan->book_id,
+            'target_date' => $newTargetDate,
+        ]);
+
+        $response->assertRedirect(route('reading-plans.index'));
+        $response->assertSessionHas('success', '読書計画を更新しました');
+        $this->assertDatabaseHas('reading_plans', [
+            'id' => $plan->id,
+            'status' => 'in_progress',
+            'target_date' => $newTargetDate.' 00:00:00',
+        ]);
+    }
+
+    /** @test */
+    public function 完了済の読書計画は編集画面にアクセスすると403が返る(): void
+    {
+        $user = User::factory()->create();
+        $plan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => ReadingPlanStatus::Completed->value,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('reading-plans.edit', $plan));
+
+        $response->assertStatus(403);
+    }
+
+    /** @test */
+    public function 完了済の読書計画は更新リクエストを送るとバリデーションエラーになる(): void
+    {
+        $user = User::factory()->create();
+        $plan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => ReadingPlanStatus::Completed->value,
+        ]);
+
+        $targetDate = now()->addDays(7)->format('Y-m-d');
+
+        $response = $this->actingAs($user)->put(
+            route('reading-plans.update', $plan),
+            [
+                'book_id' => $plan->book_id,
+                'target_date' => $targetDate,
+            ]
+        );
+
+        $response->assertSessionHasErrors(['status']);
+    }
+
+    /** @test */
+    public function 計画削除時に関連するリマインダー通知も同時に削除され一覧へリダイレクトされる(): void
+    {
+        $user = User::factory()->create();
+        $plan = ReadingPlan::factory()->create([
+            'user_id' => $user->id,
+            'status' => ReadingPlanStatus::Reading->value,
+        ]);
+
+        $user->notify(new WebNotification('テスト通知', 'three_days_before', $plan->id));
+
+        $notification = $user->notifications()->first();
+        $this->assertNotNull($notification, '通知が正常に作成されていません');
+
+        $response = $this->actingAs($user)->delete(route('reading-plans.destroy', ['reading_plan' => $plan]));
+
+        $response->assertRedirect(route('reading-plans.index'));
+        $response->assertSessionHas('success', '読書計画を削除しました');
+
+        $this->assertModelMissing($plan);
+        $this->assertDatabaseMissing('notifications', ['id' => $notification->id]);
     }
 }
